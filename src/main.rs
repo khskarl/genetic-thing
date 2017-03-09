@@ -10,7 +10,7 @@ struct Individual<T> {
 
 impl<T> Individual<T> {
     fn new(size: u32, range: &Range<T>) -> Individual<T>
-        where T: rand::Rand, T: rand::distributions::range::SampleRange
+        where T: rand::Rand + rand::distributions::range::SampleRange
     {
         let mut genome: Vec<T> = Vec::new();
         let mut rng = rand::thread_rng();
@@ -32,7 +32,7 @@ struct Population<T> {
 
 impl<T> Population<T> {
     fn new(size: u32, genome_size: u32, range: Range<T>) -> Population<T>
-        where T: rand::Rand, T: rand::distributions::range::SampleRange
+        where T: rand::Rand + rand::distributions::range::SampleRange
     {
         let mut individuals: Vec<Individual<T>> = Vec::new();
 
