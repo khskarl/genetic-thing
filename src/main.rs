@@ -3,6 +3,7 @@ extern crate rand;
 use rand::Rng;
 use std::env;
 
+// Individual Stuff
 #[derive(Debug)]
 struct Individual<T> {
     genome: Vec<T>,
@@ -24,9 +25,35 @@ impl<T> Individual<T> {
     }
 }
 
+// Population Stuff
+struct Population<T> {
+    individuals: Vec<Individual<T>>,
+}
+
+impl<T> Population<T> {
+    fn new(size: u32, genome_size: u32) -> Population<T>
+        where T: rand::Rand
+    {
+        let mut individuals: Vec<Individual<T>> = Vec::new();
+
+        for _ in 0..size {
+            individuals.push(Individual::<T>::new(genome_size));
+        }
+
+        Population::<T> { individuals: individuals }
+    }
+
+    fn genome_size(&self) -> usize {
+        self.individuals.len()
+    }
+}
+
+// Everything else
 fn main() {
-    let populationSize = 10;
-    let individual = Individual::<i32>::new(10);
-    
-    println!("{:?}", individual);
+    let population_size = 100;
+    let genome_size = 10;
+    let population = Population::<bool>::new(population_size, genome_size);
+
+    println!("{:?}", population.individuals[0]);
+    println!("Length: {}", population.genome_size());
 }
