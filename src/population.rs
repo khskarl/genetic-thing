@@ -2,6 +2,7 @@ extern crate rand;
 use self::rand::distributions::IndependentSample;
 pub use self::rand::distributions::Range;
 use std::cmp;
+use std::collections::HashSet;
 
 // Individual Stuff
 #[derive(Debug)]
@@ -26,34 +27,33 @@ impl<T> Individual<T> {
 }
 
 // Population Stuff
-pub struct Population<T> {
+pub struct Population<T, U> {
     pub individuals: Vec<Individual<T>>,
+    fitnesses: Vec<U>,
     range: Range<T>,
     genome_length: usize,
 }
 
-impl<T> Population<T>
-    where T: Copy
+impl<T, U> Population<T, U>
+    where T: Copy, U: Default + PartialOrd 
 {
-    pub fn new(size: u32, genome_size: usize, range: Range<T>) -> Population<T>
+    pub fn new(size: u32, genome_size: usize, range: Range<T>) -> Population<T, U>
         where T: rand::Rand + rand::distributions::range::SampleRange
     {
         let mut individuals: Vec<Individual<T>> = Vec::new();
+        let mut fitnesses:   Vec<U> = Vec::new();
 
         for _ in 0..size {
             individuals.push(Individual::<T>::new(genome_size, &range));
+            fitnesses.push(<U>::default());
         }
 
-        Population::<T> {
+        Population::<T, U> {
             individuals: individuals,
+            fitnesses: fitnesses,
             range: range,
             genome_length: genome_size,
         }
-    }
-
-
-    pub fn quick(&mut self) {
-        self.crossover(0, 1);
     }
 
     // TODO: Optimize this function to make temporary copy the shorter old slice
@@ -72,5 +72,29 @@ impl<T> Population<T>
         let old_left_slice_dad = Vec::from(&dad.genome[0..point + 1]);
         dad.genome[0..point + 1].copy_from_slice(&mom.genome[0..point + 1]);
         mom.genome[0..point + 1].copy_from_slice(&old_left_slice_dad);
+    }
+
+    // FIXME: This may not be working
+    fn tournament(&self, k: usize) -> usize {
+        let mut rng = rand::thread_rng();
+        let range = Range::new(0, self.individuals.len());
+
+        let biggest: usize = 0;
+        let processed_candidates = HashSet::<usize>::new();
+        while processed_candidates.len() < k {
+            let picked = range.ind_sample(&mut rng);
+
+            if processed_candidates.contains(&picked) {
+                continue;
+            }
+
+            processed_candidates.insert(picked);
+
+            if self.fitnesses[picked] > self.fitnesses[biggest] {
+                biggest = picked;
+            }
+        }
+
+        biggest
     }
 }
