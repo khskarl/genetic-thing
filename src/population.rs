@@ -1,8 +1,11 @@
 extern crate rand;
-use self::rand::distributions::IndependentSample;
-pub use self::rand::distributions::Range;
+
 use std::cmp;
 use std::collections::HashSet;
+
+pub use self::rand::distributions::Range;
+use self::rand::SeedableRng;
+use self::rand::distributions::IndependentSample;
 
 // Individual Stuff
 #[derive(Debug)]
@@ -32,6 +35,7 @@ pub struct Population<T, U> {
     fitnesses: Vec<U>,
     range: Range<T>,
     genome_length: usize,
+    rng: rand::ThreadRng,
 }
 
 impl<T, U> Population<T, U>
@@ -47,21 +51,21 @@ impl<T, U> Population<T, U>
             individuals.push(Individual::<T>::new(genome_size, &range));
             fitnesses.push(<U>::default());
         }
-
+        
         Population::<T, U> {
             individuals: individuals,
             fitnesses: fitnesses,
             range: range,
             genome_length: genome_size,
+            rng: rand::thread_rng(),
         }
     }
 
     // TODO: Optimize this function to make temporary copy the shorter old slice
     //currently it only the left slice regardless of length.
     fn crossover(&mut self, index_dad: usize, index_mom: usize) {
-        let mut rng = rand::thread_rng();
         let range = Range::new(1, self.genome_length - 1);
-        let point = range.ind_sample(&mut rng);
+        let point = range.ind_sample(&mut self.rng);
 
         let max_index = cmp::max(index_dad, index_mom);
         let min_index = cmp::min(index_dad, index_mom);
@@ -75,14 +79,13 @@ impl<T, U> Population<T, U>
     }
 
     // FIXME: This may not be working
-    fn tournament(&self, k: usize) -> usize {
-        let mut rng = rand::thread_rng();
+    fn tournament(&mut self, k: usize) -> usize {
         let range = Range::new(0, self.individuals.len());
 
-        let biggest: usize = 0;
-        let processed_candidates = HashSet::<usize>::new();
+        let mut biggest: usize = 0;
+        let mut processed_candidates = HashSet::<usize>::new();
         while processed_candidates.len() < k {
-            let picked = range.ind_sample(&mut rng);
+            let picked = range.ind_sample(&mut self.rng);
 
             if processed_candidates.contains(&picked) {
                 continue;
@@ -96,5 +99,9 @@ impl<T, U> Population<T, U>
         }
 
         biggest
+    }
+
+    fn mutate(&mut self, index_target: usize) {
+        
     }
 }
