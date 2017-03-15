@@ -1,5 +1,6 @@
 extern crate rand;
 
+use std::fmt;
 use std::cmp;
 use std::collections::HashSet;
 
@@ -10,7 +11,7 @@ use self::rand::distributions::IndependentSample;
 // Individual Stuff
 #[derive(Debug)]
 pub struct Individual<T> {
-    genome: Vec<T>,
+    pub genome: Vec<T>,
 }
 
 impl<T> Individual<T> {
@@ -29,37 +30,51 @@ impl<T> Individual<T> {
     }
 }
 
+// impl fmt::Display for Individual<bool> {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         for i in self.genome {
+//             write!(f, "{}", i)
+//         }
+//     }
+// }
+
 // Population Stuff
-pub struct Population<T, U> {
+pub struct Population<T> {
     pub individuals: Vec<Individual<T>>,
-    fitnesses: Vec<U>,
+    //fitnesses: Vec<FitnessType>,
     range: Range<T>,
     genome_length: usize,
     rng: rand::ThreadRng,
 }
 
-impl<T, U> Population<T, U>
-    where T: Copy, U: Default + PartialOrd 
+impl<T> Population<T>
+    where T: Copy// U: Default + PartialOrd 
 {
-    pub fn new(size: u32, genome_size: usize, range: Range<T>) -> Population<T, U>
+    pub fn new(size: u32, genome_size: usize, range: Range<T>) -> Population<T>
         where T: rand::Rand + rand::distributions::range::SampleRange
     {
         let mut individuals: Vec<Individual<T>> = Vec::new();
-        let mut fitnesses:   Vec<U> = Vec::new();
+        //let mut fitnesses:   Vec<U> = Vec::new();
 
         for _ in 0..size {
             individuals.push(Individual::<T>::new(genome_size, &range));
-            fitnesses.push(<U>::default());
+            //fitnesses.push(<FitnessType>::default());
         }
         
-        Population::<T, U> {
+        Population::<T> {
             individuals: individuals,
-            fitnesses: fitnesses,
+            //fitnesses: fitnesses,
             range: range,
             genome_length: genome_size,
             rng: rand::thread_rng(),
         }
     }
+
+    // fn ComputeFitness(&mut self) {
+    //     for i in 0..self.individuals.len() {
+    //         fitnesses[i] = 
+    //     }
+    // }
 
     // TODO: Optimize this function to make temporary copy the shorter old slice
     //currently it only the left slice regardless of length.
@@ -78,7 +93,7 @@ impl<T, U> Population<T, U>
         mom.genome[0..point + 1].copy_from_slice(&old_left_slice_dad);
     }
 
-    // FIXME: This may not be working
+    // FIXME: This may not be working 100%
     fn tournament(&mut self, k: usize) -> usize {
         let range = Range::new(0, self.individuals.len());
 
@@ -93,9 +108,9 @@ impl<T, U> Population<T, U>
 
             processed_candidates.insert(picked);
 
-            if self.fitnesses[picked] > self.fitnesses[biggest] {
-                biggest = picked;
-            }
+            //if self.fitnesses[picked] > self.fitnesses[biggest] {
+            //    biggest = picked;
+            //}
         }
 
         biggest
