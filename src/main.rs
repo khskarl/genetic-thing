@@ -1,6 +1,7 @@
 mod genetic;
 use genetic::population::{Population, Range};
 use genetic::fitness::HasFitness;
+use genetic::fitness::ParpsFit;
 
 fn main() {
     let population_size = 10;
@@ -10,8 +11,7 @@ fn main() {
 
     let memes = Vec::<u64>::new();
     for individual in population.individuals {
-        let fitness = individual.genome.fitness();
+        let fitness = individual.genome.fitness(&ParpsFit);
         println!("{:?} : {:?}", individual, fitness);
     }
-
 }

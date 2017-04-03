@@ -8,6 +8,8 @@ pub use self::rand::distributions::Range;
 use self::rand::SeedableRng;
 use self::rand::distributions::IndependentSample;
 
+use genetic::fitness::HasFitness;
+
 // Individual Stuff
 #[derive(Debug)]
 pub struct Individual<T> {
@@ -48,7 +50,7 @@ pub struct Population<T> {
 }
 
 impl<T> Population<T>
-    where T: Copy// U: Default + PartialOrd 
+    where T: Copy
 {
     pub fn new(size: u32, genome_size: usize, range: Range<T>) -> Population<T>
         where T: rand::Rand + rand::distributions::range::SampleRange
@@ -60,7 +62,7 @@ impl<T> Population<T>
             individuals.push(Individual::<T>::new(genome_size, &range));
             //fitnesses.push(<FitnessType>::default());
         }
-        
+
         Population::<T> {
             individuals: individuals,
             //fitnesses: fitnesses,
@@ -72,7 +74,7 @@ impl<T> Population<T>
 
     // fn ComputeFitness(&mut self) {
     //     for i in 0..self.individuals.len() {
-    //         fitnesses[i] = 
+    //         fitnesses[i] =
     //     }
     // }
 
@@ -116,7 +118,6 @@ impl<T> Population<T>
         biggest
     }
 
-    fn mutate(&mut self, index_target: usize) {
-        
-    }
+    fn mutate(&mut self, index_target: usize) {}
 }
+
