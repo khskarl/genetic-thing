@@ -1,8 +1,8 @@
-use genetic::helpers::BinaryVectorToDecimal;
+use genetic::helpers::binary_vector_to_decimal;
 
 use std::f32;
 
-#[derive(Debug)]
+#[derive(PartialOrd, PartialEq, Debug)]
 pub enum FitnessType {
     Integer(i32),
     Real(f32),
@@ -22,8 +22,8 @@ impl<T> HasFitness<T> for T {
 // Fitness functions //
 ///////////////////////
 
-fn AlternatingBinaryFitness(genome: &Vec<u8>) -> FitnessType {
-    let mut was_zero = (genome[0] == 0);
+pub fn alternating_binary_fitness(genome: &Vec<u8>) -> FitnessType {
+    let mut was_zero = genome[0] == 0;
     let mut fitness = 0;
 
     for gene in genome {
@@ -37,7 +37,7 @@ fn AlternatingBinaryFitness(genome: &Vec<u8>) -> FitnessType {
     FitnessType::Integer(fitness)
 }
 
-fn AlternatingIntegerFitness(genome: &Vec<i32>) -> FitnessType {
+pub fn alternating_even_odd_fitness(genome: &Vec<i32>) -> FitnessType {
     let mut was_even = genome[0] == 0;
     let mut fitness = 0;
 
@@ -52,25 +52,26 @@ fn AlternatingIntegerFitness(genome: &Vec<i32>) -> FitnessType {
     FitnessType::Integer(fitness)
 }
 
-fn RealFitness(genome: &Vec<f32>) -> FitnessType {
+pub fn real_fitness(genome: &Vec<f32>) -> FitnessType {
     let mut fitness = 0.0;
 
     for gene in genome {
         fitness += gene * gene;
     }
+    //let fitness = genome.iter().fold(0.0, |acc, &gene| acc + gene * gene);
 
     FitnessType::Real(fitness)
 }
 
 // Parps Fitness
-pub fn ParpsFunction(x: f32) -> f32 {
+pub fn parps_function(x: f32) -> f32 {
     (x * 20.0).cos() - x.abs() / 2.0 + (x * x * x) / 4.0
 }
 
-pub fn ParpsFit(binary_genome: &Vec<u8>) -> FitnessType {
-    let decimal: i32 = BinaryVectorToDecimal(binary_genome);
+pub fn parps_fitness(binary_genome: &Vec<u8>) -> FitnessType {
+    let decimal: i32 = binary_vector_to_decimal(binary_genome);
     let limit = (2i32.pow(16) - 1) as f32;
     let f = -2.0 + (4.0 / limit) * (decimal as f32);
-    let fitness = ParpsFunction(f) + 4.0;
+    let fitness = parps_function(f) + 4.0;
     FitnessType::Real(fitness)
 }

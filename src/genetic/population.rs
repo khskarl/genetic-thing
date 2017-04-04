@@ -8,7 +8,8 @@ pub use self::rand::distributions::Range;
 use self::rand::SeedableRng;
 use self::rand::distributions::IndependentSample;
 
-use genetic::fitness::HasFitness;
+use genetic::fitness::FitnessType;
+
 
 // Individual Stuff
 #[derive(Debug)]
@@ -43,7 +44,7 @@ impl<T> Individual<T> {
 // Population Stuff
 pub struct Population<T> {
     pub individuals: Vec<Individual<T>>,
-    //fitnesses: Vec<FitnessType>,
+    fitnesses: Vec<FitnessType>,
     range: Range<T>,
     genome_length: usize,
     rng: rand::ThreadRng,
@@ -56,27 +57,21 @@ impl<T> Population<T>
         where T: rand::Rand + rand::distributions::range::SampleRange
     {
         let mut individuals: Vec<Individual<T>> = Vec::new();
-        //let mut fitnesses:   Vec<U> = Vec::new();
+        let mut fitnesses: Vec<FitnessType> = Vec::new();
 
         for _ in 0..size {
             individuals.push(Individual::<T>::new(genome_size, &range));
-            //fitnesses.push(<FitnessType>::default());
+            fitnesses.push(FitnessType::Integer(0));
         }
 
         Population::<T> {
             individuals: individuals,
-            //fitnesses: fitnesses,
+            fitnesses: fitnesses,
             range: range,
             genome_length: genome_size,
             rng: rand::thread_rng(),
         }
     }
-
-    // fn ComputeFitness(&mut self) {
-    //     for i in 0..self.individuals.len() {
-    //         fitnesses[i] =
-    //     }
-    // }
 
     // TODO: Optimize this function to make temporary copy the shorter old slice
     //currently it only the left slice regardless of length.
@@ -110,14 +105,17 @@ impl<T> Population<T>
 
             processed_candidates.insert(picked);
 
-            //if self.fitnesses[picked] > self.fitnesses[biggest] {
-            //    biggest = picked;
-            //}
+            if self.fitnesses[picked] > self.fitnesses[biggest] {
+                biggest = picked;
+            }
         }
 
         biggest
     }
 
+    fn roulette(&mut self) {
+        //let sum = self.fitnesses.iter().fold(0, |acc, &x| acc + x);
+    }
+
     fn mutate(&mut self, index_target: usize) {}
 }
-
