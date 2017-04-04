@@ -8,9 +8,6 @@ pub use self::rand::distributions::Range;
 use self::rand::SeedableRng;
 use self::rand::distributions::IndependentSample;
 
-use genetic::fitness::FitnessType;
-
-
 // Individual Stuff
 #[derive(Debug)]
 pub struct Individual<T> {
@@ -44,10 +41,9 @@ impl<T> Individual<T> {
 // Population Stuff
 pub struct Population<T> {
     pub individuals: Vec<Individual<T>>,
-    fitnesses: Vec<FitnessType>,
+    fitnesses: Vec<f32>,
     range: Range<T>,
     genome_length: usize,
-    rng: rand::ThreadRng,
 }
 
 impl<T> Population<T>
@@ -57,11 +53,11 @@ impl<T> Population<T>
         where T: rand::Rand + rand::distributions::range::SampleRange
     {
         let mut individuals: Vec<Individual<T>> = Vec::new();
-        let mut fitnesses: Vec<FitnessType> = Vec::new();
+        let mut fitnesses: Vec<f32> = Vec::new();
 
         for _ in 0..size {
             individuals.push(Individual::<T>::new(genome_size, &range));
-            fitnesses.push(FitnessType::Integer(0));
+            fitnesses.push(0.0);
         }
 
         Population::<T> {
@@ -69,15 +65,17 @@ impl<T> Population<T>
             fitnesses: fitnesses,
             range: range,
             genome_length: genome_size,
-            rng: rand::thread_rng(),
         }
     }
+
+    fn iterate_generation(&self) {}
 
     // TODO: Optimize this function to make temporary copy the shorter old slice
     //currently it only the left slice regardless of length.
     fn crossover(&mut self, index_dad: usize, index_mom: usize) {
         let range = Range::new(1, self.genome_length - 1);
-        let point = range.ind_sample(&mut self.rng);
+        let mut rng = rand::thread_rng();
+        let point = range.ind_sample(&mut rng);
 
         let max_index = cmp::max(index_dad, index_mom);
         let min_index = cmp::min(index_dad, index_mom);
@@ -91,13 +89,14 @@ impl<T> Population<T>
     }
 
     // FIXME: This may not be working 100%
-    fn tournament(&mut self, k: usize) -> usize {
+    fn tournament(&self, k: usize) -> usize {
         let range = Range::new(0, self.individuals.len());
 
         let mut biggest: usize = 0;
         let mut processed_candidates = HashSet::<usize>::new();
+        let mut rng = rand::thread_rng();
         while processed_candidates.len() < k {
-            let picked = range.ind_sample(&mut self.rng);
+            let picked = range.ind_sample(&mut rng);
 
             if processed_candidates.contains(&picked) {
                 continue;
@@ -113,9 +112,24 @@ impl<T> Population<T>
         biggest
     }
 
-    fn roulette(&mut self) {
-        //let sum = self.fitnesses.iter().fold(0, |acc, &x| acc + x);
-    }
+    fn roulette(&self) -> usize {
+        let chance = rand::random::<f32>();
+        let sum = self.fitnesses.iter().fold(0.0, |acc, &x| acc + x);
+        
+        let mut winner: usize = 0;
+        let mut last_probability = 0.0;
+        for i in 0..self.fitnesses.len() {
+            let fitness = self.fitnesses[i];
+            let probability = fitness / sum + last_probability;
 
-    fn mutate(&mut self, index_target: usize) {}
+            if chance < probability {
+                winner = i;
+                break;
+            }
+            
+            last_probability = probability; 
+        }
+        winner
+
+    }
 }
