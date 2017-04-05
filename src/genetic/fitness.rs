@@ -4,11 +4,11 @@ use std::f32;
 use std::ops::Add;
 
 pub trait HasFitness<T> {
-    fn fitness(&self, f: &Fn(&T) -> f32) -> f32;
+    fn fitness(&self, f: &fn(&T) -> f32) -> f32;
 }
 
 impl<T> HasFitness<T> for T {
-    fn fitness(&self, f: &Fn(&T) -> f32) -> f32 {
+    fn fitness(&self, f: &fn(&T) -> f32) -> f32 {
         f(&self)
     }
 }

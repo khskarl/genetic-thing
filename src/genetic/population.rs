@@ -8,6 +8,8 @@ pub use self::rand::distributions::Range;
 use self::rand::SeedableRng;
 use self::rand::distributions::IndependentSample;
 
+use genetic::fitness::HasFitness;
+
 // Individual Stuff
 #[derive(Debug)]
 pub struct Individual<T> {
@@ -41,15 +43,19 @@ impl<T> Individual<T> {
 // Population Stuff
 pub struct Population<T> {
     pub individuals: Vec<Individual<T>>,
-    fitnesses: Vec<f32>,
+    pub fitnesses: Vec<f32>,
     range: Range<T>,
     genome_length: usize,
+    
+    fitness_function:   fn(&Vec<T>) -> f32,
+    //mutation_function:   fn(&mut Vec<T>, f32), 
+    //crossover_function: fn(&mut Vec<T>, usize, usize),
 }
 
 impl<T> Population<T>
     where T: Copy
 {
-    pub fn new(size: u32, genome_size: usize, range: Range<T>) -> Population<T>
+    pub fn new(size: u32, genome_size: usize, range: Range<T>, fitness_function: fn(&Vec<T>) -> f32) -> Population<T>
         where T: rand::Rand + rand::distributions::range::SampleRange
     {
         let mut individuals: Vec<Individual<T>> = Vec::new();
@@ -65,10 +71,15 @@ impl<T> Population<T>
             fitnesses: fitnesses,
             range: range,
             genome_length: genome_size,
+            fitness_function: fitness_function
         }
     }
 
-    fn iterate_generation(&self) {}
+    pub fn iterate_generation(&mut self) {
+        for i in 0..self.individuals.len() {
+            self.fitnesses[i] = self.individuals[i].genome.fitness(&self.fitness_function);
+        }
+    }
 
     // TODO: Optimize this function to make temporary copy the shorter old slice
     //currently it only the left slice regardless of length.
