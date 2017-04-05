@@ -1,8 +1,5 @@
 use genetic::helpers::binary_vector_to_decimal;
 
-use std::f32;
-use std::ops::Add;
-
 pub trait HasFitness<T> {
     fn fitness(&self, f: &fn(&T) -> f32) -> f32;
 }
