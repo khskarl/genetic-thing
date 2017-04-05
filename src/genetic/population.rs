@@ -46,6 +46,8 @@ pub struct Population<T> {
     pub fitnesses: Vec<f32>,
     range: Range<T>,
     genome_length: usize,
+    crossover_probability: f32,
+    mutation_probability: f32,
     
     fitness_function:   fn(&Vec<T>) -> f32,
     //mutation_function:   fn(&mut Vec<T>, f32), 
@@ -55,7 +57,7 @@ pub struct Population<T> {
 impl<T> Population<T>
     where T: Copy
 {
-    pub fn new(size: u32, genome_size: usize, range: Range<T>, fitness_function: fn(&Vec<T>) -> f32) -> Population<T>
+    pub fn new(size: u32, genome_size: usize, crossover_probability: f32, mutation_probability: f32, range: Range<T>, fitness_function: fn(&Vec<T>) -> f32) -> Population<T>
         where T: rand::Rand + rand::distributions::range::SampleRange
     {
         let mut individuals: Vec<Individual<T>> = Vec::new();
@@ -70,6 +72,8 @@ impl<T> Population<T>
             individuals: individuals,
             fitnesses: fitnesses,
             range: range,
+            crossover_probability: crossover_probability,
+            mutation_probability: mutation_probability,
             genome_length: genome_size,
             fitness_function: fitness_function
         }

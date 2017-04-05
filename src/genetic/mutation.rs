@@ -18,7 +18,7 @@ impl<T> Mutation<T> for Vec<T> {
 ////////////////////////
 
 pub fn bit_flip(genome: &mut Vec<u8>, probability: f32) {
-    for gene in &mut genome.iter_mut() {
+    for gene in genome.iter_mut() {
         if rand::random::<f32>() > probability {
             continue;
         }
@@ -28,7 +28,7 @@ pub fn bit_flip(genome: &mut Vec<u8>, probability: f32) {
 }
 
 pub fn delta_mutation(genome: &mut Vec<f32>, probability: f32) {
-    for gene in &mut genome.iter_mut() {
+    for gene in genome.iter_mut() {
         if rand::random::<f32>() > probability {
             continue;
         }
