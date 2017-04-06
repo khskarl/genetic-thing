@@ -9,6 +9,7 @@ use self::rand::SeedableRng;
 use self::rand::distributions::IndependentSample;
 
 use genetic::fitness::HasFitness;
+use genetic::mutation::Mutation; 
 
 // Individual Stuff
 #[derive(Debug)]
@@ -32,14 +33,6 @@ impl<T> Individual<T> {
     }
 }
 
-// impl fmt::Display for Individual<bool> {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         for i in self.genome {
-//             write!(f, "{}", i)
-//         }
-//     }
-// }
-
 // Population Stuff
 pub struct Population<T> {
     pub individuals: Vec<Individual<T>>,
@@ -57,7 +50,14 @@ pub struct Population<T> {
 impl<T> Population<T>
     where T: Copy
 {
-    pub fn new(size: u32, genome_size: usize, crossover_probability: f32, mutation_probability: f32, range: Range<T>, fitness_function: fn(&Vec<T>) -> f32, crossover_function: fn(&mut Vec<T>, &mut Vec<T>), mutation_function: fn(&mut Vec<T>, f32)) -> Population<T>
+    pub fn new(size: u32,
+               genome_size: usize,
+               crossover_probability: f32,
+               mutation_probability: f32,
+               range: Range<T>,
+               fitness_function: fn(&Vec<T>) -> f32,
+               crossover_function: fn(&mut Vec<T>, &mut Vec<T>),
+               mutation_function: fn(&mut Vec<T>, f32)) -> Population<T>
         where T: rand::Rand + rand::distributions::range::SampleRange
     {
         let mut individuals: Vec<Individual<T>> = Vec::new();
@@ -83,6 +83,10 @@ impl<T> Population<T>
     }
 
     pub fn iterate_generation(&mut self) {
+        for individual in &mut self.individuals {
+            individual.genome.mutate(&self.mutation_function, self.mutation_probability);
+        }
+        
         for i in 0..self.individuals.len() {
             self.fitnesses[i] = self.individuals[i].genome.fitness(&self.fitness_function);
         }
