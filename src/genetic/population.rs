@@ -9,10 +9,13 @@ use self::rand::SeedableRng;
 use self::rand::distributions::IndependentSample;
 
 use genetic::fitness::HasFitness;
-use genetic::mutation::Mutation; 
+use genetic::mutation::Mutation;
+
+use genetic::helpers::SimpleStepRange;
 
 // Individual Stuff
 #[derive(Debug)]
+#[derive(Clone)]
 pub struct Individual<T> {
     pub genome: Vec<T>,
 }
@@ -40,32 +43,33 @@ pub struct Population<T> {
     range: Range<T>,
     genome_length: usize,
     crossover_probability: f32,
-    mutation_probability:  f32,
-    
-    fitness_function:   fn(&Vec<T>) -> f32,
-    crossover_function: fn(&mut Vec<T>, &mut Vec<T>),
-    mutation_function:  fn(&mut Vec<T>, f32), 
+    mutation_probability: f32,
+
+    fitness_function: fn(&Vec<T>) -> f32,
+    crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
+    mutation_function: fn(&mut Vec<T>, f32),
 }
 
 impl<T> Population<T>
     where T: Copy
 {
-    pub fn new(size: u32,
+    pub fn new(size: usize,
                genome_size: usize,
                crossover_probability: f32,
                mutation_probability: f32,
                range: Range<T>,
                fitness_function: fn(&Vec<T>) -> f32,
-               crossover_function: fn(&mut Vec<T>, &mut Vec<T>),
-               mutation_function: fn(&mut Vec<T>, f32)) -> Population<T>
+               crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
+               mutation_function: fn(&mut Vec<T>, f32))
+               -> Population<T>
         where T: rand::Rand + rand::distributions::range::SampleRange
     {
         let mut individuals: Vec<Individual<T>> = Vec::new();
         let mut fitnesses: Vec<f32> = Vec::new();
 
-        for _ in 0..size {
+        for i in 0..size {
             individuals.push(Individual::<T>::new(genome_size, &range));
-            fitnesses.push(0.0);
+            fitnesses.push(individuals[i].genome.fitness(&fitness_function));
         }
 
         Population::<T> {
@@ -75,42 +79,113 @@ impl<T> Population<T>
             crossover_probability: crossover_probability,
             mutation_probability: mutation_probability,
             genome_length: genome_size,
-            
-            fitness_function: fitness_function, 
+
+            fitness_function: fitness_function,
             crossover_function: crossover_function,
             mutation_function: mutation_function,
         }
     }
 
     pub fn iterate_generation(&mut self) {
+        let fittest_index = self.get_fittest_individual();
+        let fittest_individual = self.individuals[fittest_index].clone();
+        let fittest_fitness = self.fitnesses[fittest_index];
+        
+        let mut new_individuals = self.individuals.clone();
+        for _ in SimpleStepRange(0, self.individuals.len(), 2) {
+            if rand::random::<f32>() > self.crossover_probability {
+                continue;
+            }
+
+            let dad_index = self.select_fit_individual();
+            let mom_index = self.select_fit_individual_except(dad_index);
+
+            //println!("dad: {}, mom: {}", dad_index, mom_index);
+            let (boy_genome, girl_genome) = self.crossover(dad_index, mom_index);
+            let (worst_index, second_worst_index) = self.get_weakest_couple();
+            new_individuals[worst_index].genome.clone_from(&boy_genome);
+            new_individuals[second_worst_index].genome.clone_from(&girl_genome);
+        }
+        self.individuals.clone_from(&new_individuals);
+
         for individual in &mut self.individuals {
             individual.genome.mutate(&self.mutation_function, self.mutation_probability);
         }
-        
+
+        self.compute_fitnesses();
+
+        // TODO: Apply elitism here
+        let (weakest_index, _) = self.get_weakest_couple();
+        self.individuals[weakest_index] = fittest_individual.clone();
+        self.fitnesses[weakest_index] = fittest_fitness;
+    }
+
+    fn select_fit_individual(&self) -> usize {
+        self.roulette()
+    }
+
+    fn select_fit_individual_except(&self, dad_index: usize) -> usize {
+        let mut mom_index: usize;
+
+        loop {
+            mom_index = self.roulette();
+
+            if mom_index != dad_index {
+                break;
+            }
+        }
+        mom_index
+    }
+
+    fn get_fittest_individual(&self) -> usize {
+        let mut fittest_index = 0;
+
+        for i in 1..self.individuals.len() {
+            if self.fitnesses[i] > self.fitnesses[fittest_index] {
+                fittest_index = i;
+            }
+        }
+        fittest_index
+    }
+
+    fn get_weakest_couple(&self) -> (usize, usize) {
+        let mut weakest_index = 0;
+        let mut second_weakest_index = 0;
+
+        for i in 1..self.individuals.len() {
+            if self.fitnesses[i] < self.fitnesses[weakest_index] {
+                second_weakest_index = weakest_index;
+                weakest_index = i;
+            }
+        }
+        (weakest_index, second_weakest_index)
+    }
+
+    fn compute_fitnesses(&mut self) {
         for i in 0..self.individuals.len() {
             self.fitnesses[i] = self.individuals[i].genome.fitness(&self.fitness_function);
         }
     }
 
-    // TODO: Do not mutate original dad and mom directly, make a copy so the old one can be used
-    pub fn crossover(&mut self, index_dad: usize, index_mom: usize) {
+    fn crossover(&mut self, index_dad: usize, index_mom: usize) -> (Vec<T>, Vec<T>) {
         let max_index = cmp::max(index_dad, index_mom);
         let min_index = cmp::min(index_dad, index_mom);
 
         let (split_left, split_right) = self.individuals.split_at_mut(max_index);
         let (dad, mom) = (&mut split_left[min_index], &mut split_right[0]);
-        
-        (self.crossover_function)(&mut dad.genome, &mut mom.genome);
+
+        let (boy_genome, girl_genome) = (self.crossover_function)(&dad.genome, &mom.genome);
+
+        (boy_genome, girl_genome)
     }
 
-    // FIXME: This may not be working 100%
     fn tournament(&self, k: usize) -> usize {
         let range = Range::new(0, self.individuals.len());
 
         let mut biggest: usize = 0;
         let mut processed_candidates = HashSet::<usize>::new();
         let mut rng = rand::thread_rng();
-        
+
         while processed_candidates.len() < k {
             let picked = range.ind_sample(&mut rng);
 
@@ -131,7 +206,7 @@ impl<T> Population<T>
     fn roulette(&self) -> usize {
         let chance = rand::random::<f32>();
         let sum = self.fitnesses.iter().fold(0.0, |acc, &x| acc + x);
-        
+
         let mut winner: usize = 0;
         let mut last_probability = 0.0;
         for i in 0..self.fitnesses.len() {
@@ -142,10 +217,9 @@ impl<T> Population<T>
                 winner = i;
                 break;
             }
-            
-            last_probability = probability; 
-        }
-        winner
 
+                        last_probability = probability;
+            }
+            winner
+        }
     }
-}

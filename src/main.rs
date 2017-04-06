@@ -5,9 +5,9 @@ use genetic::crossover::one_point_crossover;
 use genetic::mutation::bit_flip;
 
 fn main() {
-    let total_generations = 10;
+    let total_generations = 1000;
 
-    let population_size = 4;
+    let population_size = 5;
     let genome_size = 10;
     let crossover_probability = 0.95;
     let mutation_probability = 0.05;
