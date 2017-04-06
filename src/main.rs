@@ -1,15 +1,13 @@
 mod genetic;
 use genetic::population::{Population, Range};
-use genetic::fitness::HasFitness;
 use genetic::fitness::max_alternating_bits;
 use genetic::crossover::one_point_crossover;
-use genetic::mutation::Mutation;
 use genetic::mutation::bit_flip;
 
 fn main() {
     let population_size = 4;
     let genome_size = 10;
-    let crossover_probability = 0.2;
+    let crossover_probability = 0.95;
     let mutation_probability = 0.05;
     let mut population = Population::<u8>::new(population_size,
                                                genome_size,

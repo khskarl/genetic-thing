@@ -88,8 +88,7 @@ impl<T> Population<T>
         }
     }
 
-    // TODO: Optimize this function to make temporary copy the shorter old slice
-    //currently it only the left slice regardless of length.
+    // TODO: Do not mutate original dad and mom directly, make a copy so the old one can be used
     pub fn crossover(&mut self, index_dad: usize, index_mom: usize) {
         let max_index = cmp::max(index_dad, index_mom);
         let min_index = cmp::min(index_dad, index_mom);
@@ -97,8 +96,7 @@ impl<T> Population<T>
         let (split_left, split_right) = self.individuals.split_at_mut(max_index);
         let (dad, mom) = (&mut split_left[min_index], &mut split_right[0]);
         
-        (self.crossover_function)(&mut dad.genome,
-                                  &mut mom.genome);
+        (self.crossover_function)(&mut dad.genome, &mut mom.genome);
     }
 
     // FIXME: This may not be working 100%
