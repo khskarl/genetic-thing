@@ -26,7 +26,7 @@ fn main() {
 
     for current_generation in 0..total_generations {
         println!("A E S T H E T I C S: {}", current_generation);
-        
+
         for i in 0..population.individuals.len() {
             let individual = &population.individuals[i];
             let fitness = population.fitnesses[i];
