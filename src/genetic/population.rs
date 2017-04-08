@@ -40,10 +40,13 @@ impl<T> Individual<T> {
 pub struct Population<T> {
     pub individuals: Vec<Individual<T>>,
     pub fitnesses: Vec<f32>,
-    range: Range<T>,
+    pub best_fitness_in_generation: Vec<f32>,
+    pub average_fitness_in_generation: Vec<f32>,
     genome_length: usize,
     crossover_probability: f32,
     mutation_probability: f32,
+    has_elitism: bool,
+    range: Range<T>,
 
     fitness_function: fn(&Vec<T>) -> f32,
     crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
@@ -58,6 +61,7 @@ impl<T> Population<T>
                crossover_probability: f32,
                mutation_probability: f32,
                range: Range<T>,
+               has_elitism: bool,
                fitness_function: fn(&Vec<T>) -> f32,
                crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
                mutation_function: fn(&mut Vec<T>, f32))
@@ -75,10 +79,13 @@ impl<T> Population<T>
         Population::<T> {
             individuals: individuals,
             fitnesses: fitnesses,
+            best_fitness_in_generation: Vec::<f32>::new(),
+            average_fitness_in_generation: Vec::<f32>::new(),
             range: range,
             crossover_probability: crossover_probability,
             mutation_probability: mutation_probability,
             genome_length: genome_size,
+            has_elitism: has_elitism,
 
             fitness_function: fitness_function,
             crossover_function: crossover_function,
@@ -114,10 +121,23 @@ impl<T> Population<T>
 
         self.compute_fitnesses();
 
-        // TODO: Apply elitism here
-        let (weakest_index, _) = self.get_weakest_couple();
-        self.individuals[weakest_index] = fittest_individual.clone();
-        self.fitnesses[weakest_index] = fittest_fitness;
+        // Save average and best fitness in this generation
+        {
+            let best_fitness = 0.0;
+            let mut sum_fitnesses = 0.0;
+            for i in 0..self.fitnesses.len() {
+                sum_fitnesses += self.fitnesses[i];
+                if self.fitnesses[i] > best_fitness {
+                    best_fitness = self.fitnesses[i];
+                }
+            }
+            let avg_fitness = sum_fitnesses / (self.fitnesses.len() as f32);
+            
+            self.average_fitness_in_generation.push(avg_fitness);
+            self.best_fitness_in_generation.push(best_fitness);                
+        }
+            
+            
     }
 
     fn select_fit_individual(&self) -> usize {
@@ -164,6 +184,12 @@ impl<T> Population<T>
     fn compute_fitnesses(&mut self) {
         for i in 0..self.individuals.len() {
             self.fitnesses[i] = self.individuals[i].genome.fitness(&self.fitness_function);
+        }
+
+        if self.has_elitism {
+            let (weakest_index, _) = self.get_weakest_couple();
+            self.individuals[weakest_index] = fittest_individual.clone();
+            self.fitnesses[weakest_index] = fittest_fitness;
         }
     }
 
@@ -218,8 +244,8 @@ impl<T> Population<T>
                 break;
             }
 
-                        last_probability = probability;
-            }
-            winner
+            last_probability = probability;
         }
+        winner
     }
+}

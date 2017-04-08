@@ -11,6 +11,7 @@ fn main() {
     let genome_size = 10;
     let crossover_probability = 0.95;
     let mutation_probability = 0.05;
+    let has_elitism = true;
     let fitness_function = max_alternating_bits;
     let mutation_function = bit_flip;
     let mut population = Population::<u8>::new(population_size,
@@ -18,6 +19,7 @@ fn main() {
                                                crossover_probability,
                                                mutation_probability,
                                                Range::new(0, 2),
+                                               has_elitism,
                                                fitness_function,
                                                one_point_crossover,
                                                mutation_function);
