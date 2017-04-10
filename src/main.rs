@@ -1,3 +1,6 @@
+extern crate gnuplot;
+use gnuplot::{Figure, Caption, Color};
+
 mod genetic;
 use genetic::population::{Population, Range};
 use genetic::fitness::max_alternating_bits;
@@ -36,4 +39,17 @@ fn main() {
         population.iterate_generation();
     }
 
+    // Convergence plot
+    show_convergence_plot(population.average_fitness_in_generation,
+                          population.best_fitness_in_generation);
+}
+
+fn show_convergence_plot(average_fitnesses: Vec<f32>,
+                         best_fitnesses: Vec<f32>) {
+    let generations: Vec<usize> = (0..average_fitnesses.len()).collect();
+    
+    let mut fg = Figure::new();
+    fg.axes2d().lines(&generations, &average_fitnesses, &[Color("black")]); 
+    fg.axes2d().lines(&generations, &best_fitnesses, &[Color("red")]);
+    fg.show();
 }

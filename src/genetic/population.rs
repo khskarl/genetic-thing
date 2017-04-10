@@ -122,6 +122,7 @@ impl<T> Population<T>
         }
 
         self.compute_fitnesses();
+        // FIXME: Maybe getting the wrong worst individual
         if self.has_elitism {
             let (weakest_index, _) = self.get_weakest_couple();
             self.individuals[weakest_index] = fittest_individual.clone();
