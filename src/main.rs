@@ -1,5 +1,6 @@
 extern crate gnuplot;
 use gnuplot::{Figure, Caption, Color};
+use gnuplot::PlotOption::{LineWidth};
 
 mod genetic;
 use genetic::population::{Population, Range};
@@ -49,7 +50,7 @@ fn show_convergence_plot(average_fitnesses: Vec<f32>,
     let generations: Vec<usize> = (0..average_fitnesses.len()).collect();
     
     let mut fg = Figure::new();
-    fg.axes2d().lines(&generations, &average_fitnesses, &[Color("black")]); 
-    fg.axes2d().lines(&generations, &best_fitnesses, &[Color("red")]);
+    fg.axes2d().lines(&generations, &average_fitnesses, &[Color("#505050"), LineWidth(1.5)]); 
+    fg.axes2d().lines(&generations, &best_fitnesses, &[Color("#0072bd"), LineWidth(1.5)]);
     fg.show();
-}
+                        }
