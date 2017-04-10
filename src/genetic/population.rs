@@ -40,6 +40,7 @@ impl<T> Individual<T> {
 pub struct Population<T> {
     pub individuals: Vec<Individual<T>>,
     pub fitnesses: Vec<f32>,
+    pub best_individual_in_generation: Vec<Individual<T>>,
     pub best_fitness_in_generation: Vec<f32>,
     pub average_fitness_in_generation: Vec<f32>,
     genome_length: usize,
@@ -79,6 +80,7 @@ impl<T> Population<T>
         Population::<T> {
             individuals: individuals,
             fitnesses: fitnesses,
+            best_individual_in_generation: Vec::<Individual<T>>::new(),
             best_fitness_in_generation: Vec::<f32>::new(),
             average_fitness_in_generation: Vec::<f32>::new(),
             range: range,
@@ -120,20 +122,28 @@ impl<T> Population<T>
         }
 
         self.compute_fitnesses();
-
+        if self.has_elitism {
+            let (weakest_index, _) = self.get_weakest_couple();
+            self.individuals[weakest_index] = fittest_individual.clone();
+            self.fitnesses[weakest_index] = fittest_fitness;
+        }
+        
         // Save average and best fitness in this generation
         {
-            let best_fitness = 0.0;
+            let mut best_fitness = 0.0;
+            let mut best_individual = self.individuals[0].clone();
             let mut sum_fitnesses = 0.0;
             for i in 0..self.fitnesses.len() {
                 sum_fitnesses += self.fitnesses[i];
                 if self.fitnesses[i] > best_fitness {
                     best_fitness = self.fitnesses[i];
+                    best_individual = self.individuals[i].clone();
                 }
             }
             let avg_fitness = sum_fitnesses / (self.fitnesses.len() as f32);
             
             self.average_fitness_in_generation.push(avg_fitness);
+            self.best_individual_in_generation.push(best_individual);
             self.best_fitness_in_generation.push(best_fitness);                
         }
             
@@ -184,12 +194,6 @@ impl<T> Population<T>
     fn compute_fitnesses(&mut self) {
         for i in 0..self.individuals.len() {
             self.fitnesses[i] = self.individuals[i].genome.fitness(&self.fitness_function);
-        }
-
-        if self.has_elitism {
-            let (weakest_index, _) = self.get_weakest_couple();
-            self.individuals[weakest_index] = fittest_individual.clone();
-            self.fitnesses[weakest_index] = fittest_fitness;
         }
     }
 
