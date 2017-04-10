@@ -5,7 +5,7 @@ use genetic::crossover::one_point_crossover;
 use genetic::mutation::bit_flip;
 
 fn main() {
-    let total_generations = 1000;
+    let total_generations = 100;
 
     let population_size = 5;
     let genome_size = 10;
