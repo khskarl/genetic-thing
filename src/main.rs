@@ -1,6 +1,6 @@
 extern crate gnuplot;
 use gnuplot::{Figure, Color};
-use gnuplot::PlotOption::{LineWidth};
+use gnuplot::PlotOption::LineWidth;
 
 mod genetic;
 use genetic::population::{Population, Range};
@@ -8,8 +8,12 @@ use genetic::fitness::max_alternating_bits;
 use genetic::crossover::one_point_crossover;
 use genetic::mutation::bit_flip;
 
+// April 12
+// TODO: Implement display fmt to print population
+// TODO: Implement display fmt to print genomes
+
 fn main() {
-    let total_generations = 10;
+    let total_generations = 100;
 
     let population_size = 5;
     let genome_size = 10;
@@ -34,7 +38,7 @@ fn main() {
         let fitness = population.fitnesses[i];
         println!("{:?} : {}", individual, fitness);
     }
-    
+
     for current_generation in 0..total_generations {
         population.iterate_generation();
         println!("\nA E S T H E T I C S: {}", current_generation);
@@ -45,10 +49,10 @@ fn main() {
             println!("{:?} : {}", individual, fitness);
         }
 
-        println!("Best vector: {:?}", population.best_fitness_in_generation);
-        println!("Average vector: {:?}", population.average_fitness_in_generation);
+        // println!("Best vector: {:?}", population.best_fitness_in_generation);
+        // println!("Average vector: {:?}", population.average_fitness_in_generation);
         // if let Some(best_fitness) = population.best_fitness_in_generation.last() {
-                 //     println!("The Best: {}", best_fitness);
+        //     println!("The Best: {}", best_fitness);
         // }
     }
 
@@ -57,13 +61,16 @@ fn main() {
                           population.best_fitness_in_generation);
 }
 
-fn show_convergence_plot(average_fitnesses: Vec<f32>,
-                         best_fitnesses: Vec<f32>) {
+fn show_convergence_plot(average_fitnesses: Vec<f32>, best_fitnesses: Vec<f32>) {
     let generations: Vec<usize> = (0..average_fitnesses.len()).collect();
-    
+
     let mut fg = Figure::new();
     fg.axes2d()
-        .lines(&generations, &average_fitnesses, &[Color("#505050"), LineWidth(1.5)])
-        .lines(&generations, &best_fitnesses, &[Color("#0072bd"), LineWidth(1.5)]); 
+        .lines(&generations,
+               &average_fitnesses,
+               &[Color("#505050"), LineWidth(1.5)])
+        .lines(&generations,
+               &best_fitnesses,
+               &[Color("#0072bd"), LineWidth(1.5)]);
     fg.show();
 }
