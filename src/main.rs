@@ -8,10 +8,6 @@ use genetic::fitness::max_alternating_bits;
 use genetic::crossover::one_point_crossover;
 use genetic::mutation::bit_flip;
 
-// April 12
-// TODO: Implement display fmt to print population
-// TODO: Implement display fmt to print genomes
-
 fn main() {
     let total_generations = 100;
 
@@ -33,44 +29,28 @@ fn main() {
                                                mutation_function);
 
     println!("Initial population");
-    for i in 0..population.individuals.len() {
-        let individual = &population.individuals[i];
-        let fitness = population.fitnesses[i];
-        println!("{:?} : {}", individual, fitness);
-    }
+    population.print();
 
     for current_generation in 0..total_generations {
-        population.iterate_generation();
         println!("\nA E S T H E T I C S: {}", current_generation);
-
-        for i in 0..population.individuals.len() {
-            let individual = &population.individuals[i];
-            let fitness = population.fitnesses[i];
-            println!("{:?} : {}", individual, fitness);
-        }
-
-        // println!("Best vector: {:?}", population.best_fitness_in_generation);
-        // println!("Average vector: {:?}", population.average_fitness_in_generation);
-        // if let Some(best_fitness) = population.best_fitness_in_generation.last() {
-        //     println!("The Best: {}", best_fitness);
-        // }
+        population.iterate_generation();
+        population.print();
     }
-
-    // Convergence plot
-    show_convergence_plot(population.average_fitness_in_generation,
-                          population.best_fitness_in_generation);
+    show_convergence_plot(&population.average_fitness_in_generation,
+                          &population.best_fitness_in_generation);
+    
 }
 
-fn show_convergence_plot(average_fitnesses: Vec<f32>, best_fitnesses: Vec<f32>) {
+fn show_convergence_plot(average_fitnesses: &Vec<f32>, best_fitnesses: &Vec<f32>) {
     let generations: Vec<usize> = (0..average_fitnesses.len()).collect();
 
     let mut fg = Figure::new();
     fg.axes2d()
         .lines(&generations,
-               &average_fitnesses,
+               average_fitnesses,
                &[Color("#505050"), LineWidth(1.5)])
         .lines(&generations,
-               &best_fitnesses,
+               best_fitnesses,
                &[Color("#0072bd"), LineWidth(1.5)]);
     fg.show();
 }
