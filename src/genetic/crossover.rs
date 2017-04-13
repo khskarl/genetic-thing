@@ -1,8 +1,5 @@
 extern crate rand;
-
-use self::rand::distributions::Range;
-use self::rand::SeedableRng;
-use self::rand::distributions::IndependentSample;
+use self::rand::Rng;
 
 /////////////////////////
 // Crossover functions //
@@ -11,9 +8,7 @@ use self::rand::distributions::IndependentSample;
 pub fn one_point_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<T>, Vec<T>)
     where T: Copy
 {
-    let range = Range::new(1, dad_genome.len() - 1);
-    let mut rng = rand::thread_rng();
-    let point = range.ind_sample(&mut rng);
+    let point = rand::thread_rng().gen_range(1, dad_genome.len() - 1);
 
     let mut boy_genome = dad_genome.clone();
     let mut girl_genome = mom_genome.clone();
@@ -28,9 +23,8 @@ pub fn one_point_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<
 pub fn partially_matched_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<T>, Vec<T>)
     where T: Copy + PartialEq
 {
-    let mut rng = rand::thread_rng();
-    let start_index = Range::new(1, dad_genome.len() / 2).ind_sample(&mut rng);
-    let end_index = Range::new(dad_genome.len() / 2, dad_genome.len() - 1).ind_sample(&mut rng);
+    let start_index = rand::thread_rng().gen_range(1, dad_genome.len() / 2);
+    let end_index = rand::thread_rng().gen_range(dad_genome.len() / 2, dad_genome.len() - 1);
     
     let mut boy_genome = dad_genome.clone();
     let mut girl_genome = mom_genome.clone();
