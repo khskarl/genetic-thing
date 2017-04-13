@@ -23,7 +23,6 @@ pub fn one_point_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<
     (boy_genome, girl_genome)
 }
 
-// Permutation crossovers
 // TODO: Test the dank out of this function
 pub fn partially_matched_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<T>, Vec<T>)
     where T: Copy + PartialEq
@@ -115,3 +114,4 @@ pub fn blend_crossover(dad_genome: &Vec<f32>, mom_genome: &Vec<f32>) -> (Vec<f32
 
     (boy_genome, girl_genome)
 }
+
