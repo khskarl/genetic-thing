@@ -253,11 +253,12 @@ impl<T> Population<T>
     }
 
     pub fn print(&self)
-        where T: fmt::Debug {
+        where T: fmt::Debug
+    {
         for i in 0..self.individuals.len() {
             let individual = &self.individuals[i];
             let fitness = self.fitnesses[i];
-            println!("{:?} : {}", individual.genome, fitness); 
+            println!("{:?} : {}", individual.genome, fitness);
             // println!("Best vector: {:?}", population.best_fitness_in_generation);
             // println!("Average vector: {:?}", population.average_fitness_in_generation);
             // if let Some(best_fitness) = population.best_fitness_in_generation.last() {
@@ -267,5 +268,4 @@ impl<T> Population<T>
 
         // Convergence plot
     }
-         
-     }
+}

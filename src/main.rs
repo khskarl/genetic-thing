@@ -36,9 +36,14 @@ fn main() {
         population.iterate_generation();
         population.print();
     }
+
+    if let Some(best_individual) = population.best_individual_in_generation.last() {
+        println!("Best genome: {:?}", best_individual.genome);
+    }
+
     show_convergence_plot(&population.average_fitness_in_generation,
                           &population.best_fitness_in_generation);
-    
+
 }
 
 fn show_convergence_plot(average_fitnesses: &Vec<f32>, best_fitnesses: &Vec<f32>) {
