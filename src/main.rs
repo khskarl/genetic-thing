@@ -5,29 +5,29 @@ use gnuplot::PlotOption::LineWidth;
 mod genetic;
 use genetic::helpers::Range;
 use genetic::population::{Population};
-use genetic::fitness::max_alternating_bits;
-use genetic::crossover::{one_point_crossover, uniform_crossover};
-use genetic::mutation::bit_flip;
+use genetic::fitness::{max_alternating_bits, min_dejong};
+use genetic::crossover::{one_point_crossover, uniform_average_crossover, uniform_crossover};
+use genetic::mutation::{bit_flip, delta_mutation, gaussian_mutation};
 
 fn main() {
     let total_generations = 250;
 
     let population_size = 50;
-    let genome_size = 18;
+    let genome_size = 2;
     let crossover_probability = 0.95;
     let mutation_probability = 0.05;
     let has_elitism = true;
-    let fitness_function = max_alternating_bits;
-    let mutation_function = bit_flip;
-    let mut population = Population::<u8>::new(population_size,
-                                               genome_size,
-                                               crossover_probability,
-                                               mutation_probability,
-                                               Range::new(0, 2),
-                                               has_elitism,
-                                               fitness_function,
-                                               uniform_crossover,
-                                               mutation_function);
+    let fitness_function = min_dejong;
+    let mutation_function = gaussian_mutation;
+    let mut population = Population::<f32>::new(population_size,
+                                                genome_size,
+                                                crossover_probability,
+                                                mutation_probability,
+                                                Range::new(-3.0, 3.0),
+                                                has_elitism,
+                                                fitness_function,
+                                                uniform_average_crossover,
+                                                mutation_function);
 
     println!("Initial population");
     population.print();

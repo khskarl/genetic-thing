@@ -2,7 +2,7 @@ extern crate rand;
 use self::rand::Rng;
 
 extern crate num;
-use self::num::{Num, Zero, One};
+use self::num::{Num};
 
 use std::ops::{Add, Div};
 

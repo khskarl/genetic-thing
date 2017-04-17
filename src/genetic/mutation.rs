@@ -35,7 +35,7 @@ pub fn delta_mutation(genome: &mut Vec<f32>, probability: f32, range: &Range<f32
             continue;
         }
 
-        let delta = rand::random::<f32>() * 0.1;
+        let delta = rand::random::<f32>() * 0.05;
         let new_value = *gene + delta;
         *gene = new_value;
     }
@@ -80,7 +80,7 @@ fn gaussian(mean: f32, deviation: f32) -> f32 {
 }
 
 // TODO: Test the dank out of this function
-fn gaussian_mutation(genome: &mut Vec<f32>, probability: f32, range: &Range<f32>) {
+pub fn gaussian_mutation(genome: &mut Vec<f32>, probability: f32, range: &Range<f32>) {
     for i in 0..genome.len() {
         if rand::random::<f32>() > probability {
             continue;

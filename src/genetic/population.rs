@@ -1,11 +1,14 @@
 extern crate rand;
+pub use self::rand::distributions;
+use self::rand::distributions::IndependentSample;
+
+extern crate num;
+use self::num::{Num, Zero, One};
 
 use std::fmt;
 use std::cmp;
+use std::ops::Add;
 use std::collections::HashSet;
-
-pub use self::rand::distributions;
-use self::rand::distributions::IndependentSample;
 
 use genetic::fitness::HasFitness;
 use genetic::mutation::Mutation;
@@ -22,11 +25,11 @@ impl<T> Individual<T>
     where T: Copy + PartialOrd
 {
     pub fn new(size: usize, range: &Range<T>) -> Individual<T>
-        where T: rand::Rand + rand::distributions::range::SampleRange
+        where T: rand::Rand + rand::distributions::range::SampleRange + Add + Num
     {
         let mut genome: Vec<T> = Vec::new();
         let mut rng = rand::thread_rng();
-        let rangeDist = distributions::Range::new(range.start, range.end);
+        let rangeDist = distributions::Range::new(range.start, range.end + T::one());
         for _ in 0..size {
             let value = rangeDist.ind_sample(&mut rng);
             genome.push(value);
@@ -57,7 +60,7 @@ pub struct Population<T>
 }
 
 impl<T> Population<T>
-    where T: Copy + PartialOrd
+    where T: Copy + PartialOrd + Num
 {
     pub fn new(size: usize,
                genome_size: usize,
