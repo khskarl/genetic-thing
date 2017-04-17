@@ -3,7 +3,8 @@ use gnuplot::{Figure, Color};
 use gnuplot::PlotOption::LineWidth;
 
 mod genetic;
-use genetic::population::{Population, Range};
+use genetic::helpers::Range;
+use genetic::population::{Population};
 use genetic::fitness::max_alternating_bits;
 use genetic::crossover::one_point_crossover;
 use genetic::mutation::bit_flip;
@@ -11,7 +12,7 @@ use genetic::mutation::bit_flip;
 fn main() {
     let total_generations = 100;
 
-    let population_size = 5;
+    let population_size = 50;
     let genome_size = 10;
     let crossover_probability = 0.95;
     let mutation_probability = 0.05;

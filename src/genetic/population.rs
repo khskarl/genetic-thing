@@ -4,13 +4,13 @@ use std::fmt;
 use std::cmp;
 use std::collections::HashSet;
 
-pub use self::rand::distributions::Range;
+pub use self::rand::distributions;
 use self::rand::distributions::IndependentSample;
 
 use genetic::fitness::HasFitness;
 use genetic::mutation::Mutation;
 
-use genetic::helpers::SimpleStepRange;
+use genetic::helpers::{SimpleStepRange, Range};
 
 // Individual Stuff
 #[derive(Debug, Clone)]
@@ -18,15 +18,17 @@ pub struct Individual<T> {
     pub genome: Vec<T>,
 }
 
-impl<T> Individual<T> {
+impl<T> Individual<T>
+    where T: Copy + PartialOrd
+{
     pub fn new(size: usize, range: &Range<T>) -> Individual<T>
         where T: rand::Rand + rand::distributions::range::SampleRange
     {
         let mut genome: Vec<T> = Vec::new();
         let mut rng = rand::thread_rng();
-
+        let rangeDist = distributions::Range::new(range.start, range.end);
         for _ in 0..size {
-            let value = range.ind_sample(&mut rng);
+            let value = rangeDist.ind_sample(&mut rng);
             genome.push(value);
         }
 
@@ -35,7 +37,9 @@ impl<T> Individual<T> {
 }
 
 // Population Stuff
-pub struct Population<T> {
+pub struct Population<T>
+    where T: PartialOrd
+{
     pub individuals: Vec<Individual<T>>,
     pub fitnesses: Vec<f32>,
     pub best_individual_in_generation: Vec<Individual<T>>,
@@ -47,13 +51,13 @@ pub struct Population<T> {
     has_elitism: bool,
     range: Range<T>,
 
-    fitness_function: fn(&Vec<T>) -> f32,
+    fitness_function: fn(&Vec<T>, &Range<T>) -> f32,
     crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
     mutation_function: fn(&mut Vec<T>, f32),
 }
 
 impl<T> Population<T>
-    where T: Copy
+    where T: Copy + PartialOrd
 {
     pub fn new(size: usize,
                genome_size: usize,
@@ -61,7 +65,7 @@ impl<T> Population<T>
                mutation_probability: f32,
                range: Range<T>,
                has_elitism: bool,
-               fitness_function: fn(&Vec<T>) -> f32,
+               fitness_function: fn(&Vec<T>, &Range<T>) -> f32,
                crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
                mutation_function: fn(&mut Vec<T>, f32))
                -> Population<T>
@@ -71,8 +75,9 @@ impl<T> Population<T>
         let mut fitnesses: Vec<f32> = Vec::new();
 
         for i in 0..size {
+            
             individuals.push(Individual::<T>::new(genome_size, &range));
-            fitnesses.push(individuals[i].genome.fitness(&fitness_function));
+            fitnesses.push(individuals[i].genome.fitness(&fitness_function, &range));
         }
 
         Population::<T> {
@@ -192,7 +197,8 @@ impl<T> Population<T>
 
     fn compute_fitnesses(&mut self) {
         for i in 0..self.individuals.len() {
-            self.fitnesses[i] = self.individuals[i].genome.fitness(&self.fitness_function);
+            self.fitnesses[i] = self.individuals[i].genome.fitness(&self.fitness_function,
+                                                                   &self.range);
         }
     }
 
@@ -209,14 +215,14 @@ impl<T> Population<T>
     }
 
     fn tournament(&self, k: usize) -> usize {
-        let range = Range::new(0, self.individuals.len());
+        let rangeDist = distributions::Range::new(0, self.individuals.len());
 
         let mut biggest: usize = 0;
         let mut processed_candidates = HashSet::<usize>::new();
         let mut rng = rand::thread_rng();
 
         while processed_candidates.len() < k {
-            let picked = range.ind_sample(&mut rng);
+            let picked = rangeDist.ind_sample(&mut rng);
 
             if processed_candidates.contains(&picked) {
                 continue;

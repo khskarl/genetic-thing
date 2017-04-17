@@ -1,4 +1,18 @@
 
+pub struct Range<T> {
+    pub start: T,
+    pub end: T
+}
+
+impl<T> Range<T> {
+    pub fn new(start: T, end: T) -> Range<T> {
+        Range::<T> {
+            start: start,
+            end: end
+        }
+    }
+}
+
 pub fn binary_vector_to_decimal(binary_vector: &Vec<u8>) -> i32 {
     let mut decimal: i32 = 0;
     let size = binary_vector.len() as u32 - 1;
