@@ -45,14 +45,15 @@ pub fn max_alternating_even_odd(genome: &Vec<i32>, range: &Range<i32>) -> f32 {
     fitness as f32
 }
 
-pub fn min_dejong_function(genome: &Vec<f32>, range: &Range<f32>) -> f32 {
+pub fn min_dejong(genome: &Vec<f32>, range: &Range<f32>) -> f32 {
     let mut fitness = 0.0;
+    let maximum_value = range.end * range.end;
     
     for gene in genome {
         fitness += gene * gene;
     }
 
-    fitness
+    (fitness / maximum_value) - 1.0
 }
 
 // Parps Fitness
