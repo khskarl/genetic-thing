@@ -64,6 +64,25 @@ pub fn partially_matched_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) 
 }
 
 // TODO: Test the dank out of this function
+pub fn uniform_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<T>, Vec<T>)
+    where T: Copy + PartialEq + Num + Div<Output = T> + Add<Output = T>
+{
+    let mix_ratio = 0.5;
+
+    let mut boy_genome = dad_genome.clone();
+    let mut girl_genome = mom_genome.clone();
+
+    for i in 0..mom_genome.len() {
+        if rand::random::<f32>() > mix_ratio {
+            boy_genome[i] = mom_genome[i];
+            girl_genome[i] = dad_genome[i]
+        } 
+    }
+
+    (boy_genome, girl_genome)
+}
+
+// TODO: Test the dank out of this function
 pub fn uniform_average_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<T>, Vec<T>)
     where T: Copy + PartialEq + Num + Div<Output = T> + Add<Output = T>
 {

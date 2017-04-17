@@ -6,14 +6,14 @@ mod genetic;
 use genetic::helpers::Range;
 use genetic::population::{Population};
 use genetic::fitness::max_alternating_bits;
-use genetic::crossover::one_point_crossover;
+use genetic::crossover::{one_point_crossover, uniform_crossover};
 use genetic::mutation::bit_flip;
 
 fn main() {
-    let total_generations = 100;
+    let total_generations = 250;
 
     let population_size = 50;
-    let genome_size = 10;
+    let genome_size = 18;
     let crossover_probability = 0.95;
     let mutation_probability = 0.05;
     let has_elitism = true;
@@ -26,7 +26,7 @@ fn main() {
                                                Range::new(0, 2),
                                                has_elitism,
                                                fitness_function,
-                                               one_point_crossover,
+                                               uniform_crossover,
                                                mutation_function);
 
     println!("Initial population");

@@ -53,7 +53,7 @@ pub struct Population<T>
 
     fitness_function: fn(&Vec<T>, &Range<T>) -> f32,
     crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
-    mutation_function: fn(&mut Vec<T>, f32),
+    mutation_function: fn(&mut Vec<T>, f32, &Range<T>),
 }
 
 impl<T> Population<T>
@@ -67,7 +67,7 @@ impl<T> Population<T>
                has_elitism: bool,
                fitness_function: fn(&Vec<T>, &Range<T>) -> f32,
                crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
-               mutation_function: fn(&mut Vec<T>, f32))
+               mutation_function: fn(&mut Vec<T>, f32, &Range<T>))
                -> Population<T>
         where T: rand::Rand + rand::distributions::range::SampleRange
     {
@@ -121,7 +121,9 @@ impl<T> Population<T>
         self.individuals.clone_from(&new_individuals);
 
         for individual in &mut self.individuals {
-            individual.genome.mutate(&self.mutation_function, self.mutation_probability);
+            individual.genome.mutate(&self.mutation_function,
+                                     self.mutation_probability,
+                                     &self.range);
         }
 
         self.compute_fitnesses();
