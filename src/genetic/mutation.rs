@@ -35,7 +35,9 @@ pub fn delta_mutation(genome: &mut Vec<f32>, probability: f32, range: &Range<f32
             continue;
         }
 
-        let delta = rand::random::<f32>() * 0.05;
+        let delta_factor = (range.start - range.end) / 100.0;
+        
+        let delta = rand::random::<f32>() * delta_factor;
         let new_value = *gene + delta;
         *gene = new_value;
     }
@@ -47,6 +49,15 @@ pub fn random_int(genome: &mut Vec<i32>, probability: f32, range: &Range<i32>) {
             continue;
         }
         *gene = rand::thread_rng().gen_range(range.start, range.end + 1);;
+    }
+}
+
+pub fn random_real(genome: &mut Vec<f32>, probability: f32, range: &Range<f32>) {
+    for gene in genome.iter_mut() {
+        if rand::random::<f32>() > probability {
+            continue;
+        }
+        *gene = rand::thread_rng().gen_range(range.start, range.end + 1.0);;
     }
 }
 
@@ -85,7 +96,8 @@ pub fn gaussian_mutation(genome: &mut Vec<f32>, probability: f32, range: &Range<
         if rand::random::<f32>() > probability {
             continue;
         }
-
-        genome[i] = gaussian(genome[i], 0.1);
+        
+        let delta_factor = (range.start - range.end) / 10.0; 
+        genome[i] = gaussian(genome[i], delta_factor);
     }
 }
