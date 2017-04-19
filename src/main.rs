@@ -49,7 +49,7 @@ fn main() {
     }
 
     population.print_best_individual_diagnostic();
-
+    
     show_convergence_plot(&population.average_fitness_in_generation,
                           &population.best_fitness_in_generation);
     
