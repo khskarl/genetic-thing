@@ -48,6 +48,7 @@ pub fn random_int(genome: &mut Vec<i32>, probability: f32, range: &Range<i32>) {
         if rand::random::<f32>() > probability {
             continue;
         }
+        
         *gene = rand::thread_rng().gen_range(range.start, range.end + 1);;
     }
 }

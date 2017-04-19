@@ -4,10 +4,11 @@ use self::rand::distributions::IndependentSample;
 
 extern crate num;
 use self::num::{Num, Zero, One};
+use self::num::traits::pow;
 
 use std::fmt;
 use std::cmp;
-use std::ops::Add;
+use std::ops::{Add, Sub, Mul};
 use std::collections::HashSet;
 
 use genetic::fitness::HasFitness;
@@ -48,12 +49,14 @@ pub struct Population<T>
     pub best_individual_in_generation: Vec<Individual<T>>,
     pub best_fitness_in_generation: Vec<f32>,
     pub average_fitness_in_generation: Vec<f32>,
+    pub diversity_in_generation: Vec<f32>,
     genome_length: usize,
     crossover_probability: f32,
     mutation_probability: f32,
     has_elitism: bool,
     range: Range<T>,
 
+    diversity_function: fn(&Vec<T>, &Vec<T>) -> f32,
     fitness_function: fn(&Vec<T>, &Range<T>) -> f32,
     crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
     mutation_function: fn(&mut Vec<T>, f32, &Range<T>),
@@ -68,6 +71,7 @@ impl<T> Population<T>
                mutation_probability: f32,
                range: Range<T>,
                has_elitism: bool,
+               diversity_function: fn(&Vec<T>, &Vec<T>) -> f32,
                fitness_function: fn(&Vec<T>, &Range<T>) -> f32,
                crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
                mutation_function: fn(&mut Vec<T>, f32, &Range<T>))
@@ -89,12 +93,14 @@ impl<T> Population<T>
             best_individual_in_generation: Vec::<Individual<T>>::new(),
             best_fitness_in_generation: Vec::<f32>::new(),
             average_fitness_in_generation: Vec::<f32>::new(),
+            diversity_in_generation: Vec::<f32>::new(),
             range: range,
             crossover_probability: crossover_probability,
             mutation_probability: mutation_probability,
             genome_length: genome_size,
             has_elitism: has_elitism,
 
+            diversity_function: diversity_function,
             fitness_function: fitness_function,
             crossover_function: crossover_function,
             mutation_function: mutation_function,
@@ -154,6 +160,8 @@ impl<T> Population<T>
             self.average_fitness_in_generation.push(avg_fitness);
             self.best_individual_in_generation.push(best_individual);
             self.best_fitness_in_generation.push(best_fitness);
+            let diversity = self.calculate_diversity();
+            self.diversity_in_generation.push(diversity);
         }
 
 
@@ -243,6 +251,19 @@ impl<T> Population<T>
         biggest
     }
 
+    fn calculate_diversity(&self) -> f32 {
+        let mut total_diversity = 0.0;
+
+        for i in 0..self.individuals.len() {
+            for j in i..self.individuals.len() {
+                total_diversity += (self.diversity_function)(&self.individuals[i].genome,
+                                                             &self.individuals[j].genome);
+            }
+        }
+
+        total_diversity
+    }
+
     fn roulette(&self) -> usize {
         let chance = rand::random::<f32>();
         let sum = self.fitnesses.iter().fold(0.0, |acc, &x| acc + x);
@@ -277,6 +298,78 @@ impl<T> Population<T>
             // }
         }
 
-        // Convergence plot
+    }
+
+    pub fn print_best_individual_diagnostic(&self)
+        where T: fmt::Debug
+    {
+        if let Some(best_individual) = self.best_individual_in_generation.last() {
+            if let Some(best_fitness) = self.best_fitness_in_generation.last() {
+                println!("Best genome: {:?} : {}", best_individual.genome, best_fitness);
+            }
+
+            let mut is_valid = true;
+
+            for gene in &best_individual.genome {
+                if *gene > self.range.end || *gene < self.range.start {
+                    is_valid = false;
+                }
+            }
+
+            if is_valid == false {
+                println!("***Invalid best individual***");
+            }
+            
+        }
+
+        //println!("Diversity test! {}", self.compute_diversity());
+    } 
+}
+
+
+/////////////////////////
+// Diversity functions //
+/////////////////////////
+
+pub trait Diversity<T> {
+    fn diversity(&self, f: &fn(&Vec<Individual<T>>, &Range<T>) -> f32, range: &Range<T>)  -> f32;
+}
+
+impl<T> Diversity<T> for Vec<Individual<T>> {
+    fn diversity(&self, f: &fn(&Vec<Individual<T>>, &Range<T>) -> f32, range: &Range<T>) -> f32 {
+        f(&self, range)
     }
 }
+
+pub fn hamming_distance(genome_one: &Vec<u8>, genome_two: &Vec<u8>) -> f32 {
+    let mut total_distance = 0.0;
+    for i in 0..genome_one.len() {
+        if genome_one[i] != genome_two[i] {
+            total_distance += 1.0;
+        }
+    }
+    total_distance
+}
+
+pub fn euclidean_distance_int(genome_one: &Vec<i32>, genome_two: &Vec<i32>) -> f32
+{
+    let mut total_distance = 0;
+
+    for i in 0..genome_one.len() {
+        total_distance += (genome_one[i] - genome_two[i]).pow(2);
+    }
+
+    (total_distance as f32).sqrt()
+}
+
+pub fn euclidean_distance_float(genome_one: &Vec<f32>, genome_two: &Vec<f32>) -> f32
+{
+    let mut total_distance: f32 = 0.0;
+
+    for i in 0..genome_one.len() {
+        total_distance += (genome_one[i] - genome_two[i]).powf(2.0);
+    }
+
+    (total_distance).sqrt()
+}
+

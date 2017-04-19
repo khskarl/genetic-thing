@@ -69,3 +69,18 @@ pub fn parps_fitness(binary_genome: &Vec<u8>, range: &Range<f32>) -> f32 {
     let fitness = parps_function(f) + 4.0;
     fitness
 }
+
+
+/////////////////////////
+// Diversity functions //
+/////////////////////////
+
+pub trait Diversity<T> {
+    fn diversity(&self, f: &fn(&Vec<T>, &Range<T>) -> f32, range: &Range<T>)  -> f32;
+}
+
+impl<T> Diversity<T> for Vec<T> {
+    fn diversity(&self, f: &fn(&Vec<T>, &Range<T>) -> f32, range: &Range<T>) -> f32 {
+        f(&self, range)
+    }
+}
