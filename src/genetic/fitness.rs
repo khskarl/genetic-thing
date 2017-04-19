@@ -1,5 +1,6 @@
 use genetic::helpers::Range;
 use genetic::helpers::binary_vector_to_decimal;
+use genetic::helpers::hamming_distance;
 
 pub trait HasFitness<T> {
     fn fitness(&self, f: &fn(&Vec<T>, &Range<T>) -> f32, range: &Range<T>)  -> f32;
@@ -70,17 +71,14 @@ pub fn parps_fitness(binary_genome: &Vec<u8>, range: &Range<f32>) -> f32 {
     fitness
 }
 
-
-/////////////////////////
-// Diversity functions //
-/////////////////////////
-
-pub trait Diversity<T> {
-    fn diversity(&self, f: &fn(&Vec<T>, &Range<T>) -> f32, range: &Range<T>)  -> f32;
-}
-
-impl<T> Diversity<T> for Vec<T> {
-    fn diversity(&self, f: &fn(&Vec<T>, &Range<T>) -> f32, range: &Range<T>) -> f32 {
-        f(&self, range)
-    }
+pub fn pattern_recognition(genome: &Vec<u8>, range: &Range<u8>) -> f32 {
+    let pattern: Vec<u8> = [0,1,0,0,0,0,
+                            0,1,0,1,1,0,
+                            0,1,0,1,0,0,
+                            0,0,0,0,1,0,
+                            0,1,1,1,0,0,
+                            0,0,0,0,1,0].to_vec();
+    
+    let fit: f32 = hamming_distance(&pattern, &genome);
+    36.0 - fit
 }

@@ -4,31 +4,39 @@ use gnuplot::PlotOption::LineWidth;
 
 mod genetic;
 use genetic::helpers::Range;
+use genetic::helpers::{hamming_distance, euclidean_distance_int, euclidean_distance_float};
 use genetic::population::{Population};
-use genetic::population::{hamming_distance, euclidean_distance_int, euclidean_distance_float};
-use genetic::fitness::{max_alternating_bits, min_dejong};
-use genetic::crossover::{one_point_crossover, uniform_average_crossover, uniform_crossover};
-use genetic::mutation::{bit_flip, delta_mutation, gaussian_mutation};
+use genetic::fitness::{max_alternating_bits,
+                       max_alternating_even_odd,
+                       pattern_recognition,
+                       min_dejong};
+use genetic::crossover::{one_point_crossover,
+                         uniform_average_crossover,
+                         uniform_crossover};
+use genetic::mutation::{bit_flip,
+                        random_int,
+                        delta_mutation,
+                        gaussian_mutation};
 
 fn main() {
     let total_generations = 250;
 
     let population_size = 50;
-    let genome_size = 2;
+    let genome_size = 20;
     let crossover_probability = 0.95;
     let mutation_probability = 0.05;
     let has_elitism = true;
-    let fitness_function = min_dejong;
-    let mutation_function = gaussian_mutation;
-    let mut population = Population::<f32>::new(population_size,
+    let fitness_function = max_alternating_even_odd;
+    let mutation_function = random_int;
+    let mut population = Population::<i32>::new(population_size,
                                                 genome_size,
                                                 crossover_probability,
                                                 mutation_probability,
-                                                Range::new(-50.0, 50.0),
+                                                Range::new(0, 9),
                                                 has_elitism,
-                                                euclidean_distance_float,
+                                                euclidean_distance_int,
                                                 fitness_function,
-                                                uniform_average_crossover,
+                                                one_point_crossover,
                                                 mutation_function);
 
     println!("Initial population");
