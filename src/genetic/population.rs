@@ -38,6 +38,17 @@ impl<T> Individual<T>
 
         Individual::<T> { genome: genome }
     }
+
+    pub fn new_ordered(size: usize) -> Individual<i32>
+        where T: rand::Rand + rand::distributions::range::SampleRange + Add + Num
+    {
+        let mut genome: Vec<i32> = Vec::new();
+        for i in 0..size {
+            genome.push(i as i32);
+        }
+
+        Individual::<i32> { genome: genome }
+    }
 }
 
 // Population Stuff
@@ -82,11 +93,10 @@ impl<T> Population<T>
         let mut fitnesses: Vec<f32> = Vec::new();
 
         for i in 0..size {
-            
             individuals.push(Individual::<T>::new(genome_size, &range));
             fitnesses.push(individuals[i].genome.fitness(&fitness_function, &range));
         }
-
+    
         Population::<T> {
             individuals: individuals,
             fitnesses: fitnesses,
@@ -105,6 +115,44 @@ impl<T> Population<T>
             crossover_function: crossover_function,
             mutation_function: mutation_function,
         }
+    }
+
+    pub fn new_ordered(size: usize,
+                       genome_size: usize,
+                       crossover_probability: f32,
+                       mutation_probability: f32,
+                       range: Range<i32>,
+                       has_elitism: bool,
+                       diversity_function: fn(&Vec<i32>, &Vec<i32>) -> f32,
+                       fitness_function: fn(&Vec<i32>, &Range<i32>) -> f32,
+                       crossover_function: fn(&Vec<i32>, &Vec<i32>) -> (Vec<i32>, Vec<i32>),
+                       mutation_function: fn(&mut Vec<i32>, f32, &Range<i32>))
+                       -> Population<i32>
+        where T: rand::Rand + rand::distributions::range::SampleRange
+    {
+        let mut individuals: Vec<Individual<T>> = Vec::new();
+        let mut fitnesses: Vec<f32> = Vec::new();
+        let mut population = Population::<i32>::new(size,
+                                                    genome_size,
+                                                    crossover_probability,
+                                                    mutation_probability,
+                                                    range,
+                                                    has_elitism,
+                                                    diversity_function,
+                                                    fitness_function,
+                                                    crossover_function,
+                                                    mutation_function);
+
+        {
+            let mut individuals = &mut population.individuals;
+            for i in 0..individuals.len() {
+                println!("{}", i);
+                individuals[i] = Individual::<i32>::new_ordered(genome_size);
+                //fitnesses[i] = individuals[i].genome.fitness(&fitness_function, &range);
+            }
+        }
+        population
+            
     }
 
     pub fn iterate_generation(&mut self) {

@@ -82,3 +82,24 @@ pub fn pattern_recognition(genome: &Vec<u8>, range: &Range<u8>) -> f32 {
     let fit: f32 = hamming_distance(&pattern, &genome);
     36.0 - fit
 }
+
+pub fn n_queens(genome: &Vec<i32>, range: &Range<i32>) -> f32 {
+    let mut num_diagonal_collisions: usize = 0;
+
+    for i in 0..genome.len() {
+        for j in (i+1)..genome.len() {
+            
+            if (genome[i] - genome[j]).abs() as usize == (j - i) {
+                //println!("({},{}) ({},{})", i, genome[i], j, genome[j]);
+
+                num_diagonal_collisions += 1;
+                break;
+            }
+        }
+    }
+
+    
+    let board_size = genome.len();
+    //println!("Boardsize: {} - Num Collisions: {}", board_size, num_diagonal_collisions);
+    (board_size - num_diagonal_collisions) as f32
+}

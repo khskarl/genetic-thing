@@ -9,11 +9,14 @@ use genetic::population::{Population};
 use genetic::fitness::{max_alternating_bits,
                        max_alternating_even_odd,
                        pattern_recognition,
-                       min_dejong};
+                       min_dejong,
+                       n_queens};
 use genetic::crossover::{one_point_crossover,
                          uniform_average_crossover,
-                         uniform_crossover};
+                         uniform_crossover,
+                         partially_matched_crossover};
 use genetic::mutation::{bit_flip,
+                        swap_position,
                         random_int,
                         delta_mutation,
                         gaussian_mutation};
@@ -22,23 +25,28 @@ fn main() {
     let total_generations = 250;
 
     let population_size = 50;
-    let genome_size = 20;
+    let genome_size = 8;
     let crossover_probability = 0.95;
     let mutation_probability = 0.05;
     let has_elitism = true;
-    let fitness_function = max_alternating_even_odd;
-    let mutation_function = random_int;
-    let mut population = Population::<i32>::new(population_size,
-                                                genome_size,
-                                                crossover_probability,
-                                                mutation_probability,
-                                                Range::new(0, 9),
-                                                has_elitism,
-                                                euclidean_distance_int,
-                                                fitness_function,
-                                                one_point_crossover,
-                                                mutation_function);
+    let fitness_function = n_queens;
+    let mutation_function = swap_position;
+    let mut population = Population::<i32>::new_ordered(population_size,
+                                                        genome_size,
+                                                        crossover_probability,
+                                                        mutation_probability,
+                                                        Range::new(0, 7),
+                                                        has_elitism,
+                                                        euclidean_distance_int,
+                                                        fitness_function,
+                                                        partially_matched_crossover,
+                                                        mutation_function);
 
+    // let dad = vec![9, 8, 4, 5, 6,  7, 1, 3, 2, 10];
+    // let mom = vec![8, 7, 1, 2, 3, 10, 9, 5, 4,  6];
+    // let (boy, girl) = (partially_matched_crossover)(&dad, &mom);
+    // println!("{:?}\n{:?}", boy, girl);
+    
     println!("Initial population");
     population.print();
 
@@ -53,7 +61,7 @@ fn main() {
     show_convergence_plot(&population.average_fitness_in_generation,
                           &population.best_fitness_in_generation);
     
-    show_diversity_plot(&population.diversity_in_generation);
+    //show_diversity_plot(&population.diversity_in_generation);
 }
 
 fn show_convergence_plot(average_fitnesses: &Vec<f32>, best_fitnesses: &Vec<f32>) {

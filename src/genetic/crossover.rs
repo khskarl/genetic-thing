@@ -29,12 +29,13 @@ pub fn partially_matched_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) 
 {
     let start_index = rand::thread_rng().gen_range(1, dad_genome.len() / 2);
     let end_index = rand::thread_rng().gen_range(dad_genome.len() / 2, dad_genome.len() - 1);
+    //let start_index = 3;
+    //let end_index = 6;
 
     let mut boy_genome = dad_genome.clone();
     let mut girl_genome = mom_genome.clone();
-    boy_genome[start_index..end_index + 1].copy_from_slice(&mom_genome[start_index..end_index + 1]);
-    girl_genome[start_index..end_index + 1]
-        .copy_from_slice(&dad_genome[start_index..end_index + 1]);
+    boy_genome[start_index..end_index].copy_from_slice(&mom_genome[start_index..end_index]);
+    girl_genome[start_index..end_index].copy_from_slice(&dad_genome[start_index..end_index]);
 
     for i in 0..start_index {
         for j in start_index..end_index {
