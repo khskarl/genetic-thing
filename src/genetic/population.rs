@@ -1,6 +1,7 @@
 extern crate rand;
 pub use self::rand::distributions;
 use self::rand::distributions::IndependentSample;
+use self::rand::{thread_rng, Rng};
 
 extern crate num;
 use self::num::{Num, Zero, One};
@@ -46,6 +47,8 @@ impl<T> Individual<T>
         for i in 0..size {
             genome.push(i as i32);
         }
+        let mut rng = rand::thread_rng();
+        rng.shuffle(&mut genome);
 
         Individual::<i32> { genome: genome }
     }
@@ -130,8 +133,6 @@ impl<T> Population<T>
                        -> Population<i32>
         where T: rand::Rand + rand::distributions::range::SampleRange
     {
-        let mut individuals: Vec<Individual<T>> = Vec::new();
-        let mut fitnesses: Vec<f32> = Vec::new();
         let mut population = Population::<i32>::new(size,
                                                     genome_size,
                                                     crossover_probability,
@@ -145,10 +146,10 @@ impl<T> Population<T>
 
         {
             let mut individuals = &mut population.individuals;
+            let mut fitnesses = &mut population.fitnesses;
             for i in 0..individuals.len() {
-                println!("{}", i);
                 individuals[i] = Individual::<i32>::new_ordered(genome_size);
-                //fitnesses[i] = individuals[i].genome.fitness(&fitness_function, &range);
+                fitnesses[i] = individuals[i].genome.fitness(&fitness_function, &range);
             }
         }
         population

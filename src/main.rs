@@ -22,12 +22,12 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 250;
+    let total_generations = 1000;
 
-    let population_size = 50;
+    let population_size = 100;
     let genome_size = 8;
     let crossover_probability = 0.95;
-    let mutation_probability = 0.05;
+    let mutation_probability = 0.02;
     let has_elitism = true;
     let fitness_function = n_queens;
     let mutation_function = swap_position;
@@ -41,14 +41,14 @@ fn main() {
                                                         fitness_function,
                                                         partially_matched_crossover,
                                                         mutation_function);
-
+        
     println!("Initial population");
     population.print();
 
     for current_generation in 0..total_generations {
-        println!("\nA E S T H E T I C S: {}", current_generation);
+        //println!("\nA E S T H E T I C S: {}", current_generation);
         population.iterate_generation();
-        population.print();
+        //population.print();
     }
 
     population.print_best_individual_diagnostic();

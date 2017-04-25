@@ -5,6 +5,7 @@ extern crate num;
 use self::num::{Num};
 
 use std::ops::{Add, Div};
+use std::fmt::Debug;
 
 /////////////////////////
 // Crossover functions //
@@ -23,40 +24,55 @@ pub fn one_point_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<
     (boy_genome, girl_genome)
 }
 
-// TODO: Test the dank out of this function
+// TOFIX:
+// start_index: 2 end_index: 5
+// Before: [2, 0, 6, 4, 3, 5, 7, 1] [0, 4, 7, 5, 6, 2, 1, 3]
+// Copy:   [2, 0, 7, 5, 6, 5, 7, 1] [0, 4, 6, 4, 3, 2, 1, 3]
+// After:  [2, 0, 7, 5, 6, 4, 3, 1] [0, 5, 6, 4, 3, 2, 1, 6]
+
 pub fn partially_matched_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<T>, Vec<T>)
-    where T: Copy + PartialEq
+    where T: Copy + PartialEq + Debug
 {
-    let start_index = rand::thread_rng().gen_range(1, dad_genome.len() / 2);
+    let start_index = rand::thread_rng().gen_range(1, dad_genome.len() / 2); 
     let end_index = rand::thread_rng().gen_range(dad_genome.len() / 2, dad_genome.len() - 1);
-    //let start_index = 3;
-    //let end_index = 6;
 
     let mut boy_genome = dad_genome.clone();
-    let mut girl_genome = mom_genome.clone();
+    let mut girl_genome = mom_genome.clone();    
     boy_genome[start_index..end_index].copy_from_slice(&mom_genome[start_index..end_index]);
-    girl_genome[start_index..end_index].copy_from_slice(&dad_genome[start_index..end_index]);
+    girl_genome[start_index..end_index].copy_from_slice(&dad_genome[start_index..end_index]); 
 
-    for i in 0..start_index {
-        for j in start_index..end_index {
-            if boy_genome[i] == boy_genome[j] {
-                boy_genome[i] = girl_genome[j];
-            }
+    let mut is_valid_permutation = false;
+    while is_valid_permutation == false {
+        for i in 0..start_index {
+            for j in start_index..end_index {
+                if boy_genome[i] == boy_genome[j] {
+                    boy_genome[i] = girl_genome[j];
+                }
 
-            if girl_genome[i] == girl_genome[j] {
-                girl_genome[i] = boy_genome[j];
+                if girl_genome[i] == girl_genome[j] {
+                    girl_genome[i] = boy_genome[j];
+                }
             }
         }
-    }
 
-    for i in end_index..mom_genome.len() {
-        for j in start_index..end_index {
-            if boy_genome[i] == boy_genome[j] {
-                boy_genome[i] = girl_genome[j];
-            }
+        for i in end_index..mom_genome.len() {
+            for j in start_index..end_index {
+                if boy_genome[i] == boy_genome[j] {
+                    boy_genome[i] = girl_genome[j];
+                }
 
-            if girl_genome[i] == girl_genome[j] {
-                girl_genome[i] = boy_genome[j];
+                if girl_genome[i] == girl_genome[j] {
+                    girl_genome[i] = boy_genome[j];
+                }
+            } 
+        }
+        
+        is_valid_permutation = true;
+        for i in 0..dad_genome.len() {
+            for j in (i+1)..dad_genome.len() {
+                if boy_genome[i] == boy_genome[j] || girl_genome[i] == girl_genome[j] {
+                    is_valid_permutation = false;
+                }
             }
         }
     }

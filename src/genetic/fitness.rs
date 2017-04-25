@@ -101,5 +101,5 @@ pub fn n_queens(genome: &Vec<i32>, range: &Range<i32>) -> f32 {
     
     let board_size = genome.len();
     //println!("Boardsize: {} - Num Collisions: {}", board_size, num_diagonal_collisions);
-    (board_size - num_diagonal_collisions) as f32
+    (board_size - num_diagonal_collisions) as f32 / genome.len() as f32
 }
