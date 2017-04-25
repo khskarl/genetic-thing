@@ -160,7 +160,13 @@ impl<T> Population<T>
         let fittest_individual = self.individuals[fittest_index].clone();
         let fittest_fitness = self.fitnesses[fittest_index];
 
-        let mut new_individuals = self.individuals.clone();
+        let mut new_individuals = Vec::new();
+
+        for _ in 0..self.individuals.len() {
+            let fit_index = self.select_fit_individual();
+            new_individuals.push(self.individuals[fit_index].clone());
+        } 
+        
         for _ in SimpleStepRange(0, self.individuals.len(), 2) {
             if rand::random::<f32>() > self.crossover_probability {
                 continue;
@@ -171,9 +177,8 @@ impl<T> Population<T>
 
             //println!("dad: {}, mom: {}", dad_index, mom_index);
             let (boy_genome, girl_genome) = self.crossover(dad_index, mom_index);
-            let (worst_index, second_worst_index) = self.get_weakest_couple();
-            new_individuals[worst_index].genome.clone_from(&boy_genome);
-            new_individuals[second_worst_index].genome.clone_from(&girl_genome);
+            new_individuals[dad_index].genome.clone_from(&boy_genome);
+            new_individuals[mom_index].genome.clone_from(&girl_genome);
         }
         self.individuals.clone_from(&new_individuals);
 

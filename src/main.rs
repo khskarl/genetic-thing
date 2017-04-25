@@ -42,11 +42,6 @@ fn main() {
                                                         partially_matched_crossover,
                                                         mutation_function);
 
-    // let dad = vec![9, 8, 4, 5, 6,  7, 1, 3, 2, 10];
-    // let mom = vec![8, 7, 1, 2, 3, 10, 9, 5, 4,  6];
-    // let (boy, girl) = (partially_matched_crossover)(&dad, &mom);
-    // println!("{:?}\n{:?}", boy, girl);
-    
     println!("Initial population");
     population.print();
 
