@@ -22,12 +22,12 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 1000;
+    let total_generations = 10000;
 
-    let population_size = 100;
-    let genome_size = 8;
+    let population_size = 20;
+    let genome_size = 64;
     let crossover_probability = 0.95;
-    let mutation_probability = 0.02;
+    let mutation_probability = 0.01;
     let has_elitism = true;
     let fitness_function = n_queens;
     let mutation_function = swap_position;
@@ -35,7 +35,7 @@ fn main() {
                                                         genome_size,
                                                         crossover_probability,
                                                         mutation_probability,
-                                                        Range::new(0, 7),
+                                                        Range::new(0, 63),
                                                         has_elitism,
                                                         euclidean_distance_int,
                                                         fitness_function,
