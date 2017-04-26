@@ -222,34 +222,34 @@ impl<T> Population<T>
     }
 
     fn select_fit_individual(&self) -> usize {
-        self.tournament(2)
+        self.roulette()
     }
 
-        fn select_fit_individual_except(&self, dad_index: usize) -> usize {
-            let mut mom_index: usize;
+    fn select_fit_individual_except(&self, dad_index: usize) -> usize {
+        let mut mom_index: usize;
 
-            loop {
-                mom_index = self.roulette();
+        loop {
+            mom_index = self.roulette();
 
-                if mom_index != dad_index {
-                    break;
-                }
+            if mom_index != dad_index {
+                break;
             }
-            mom_index
         }
+        mom_index
+    }
 
-        fn get_fittest_individual(&self) -> usize {
-            let mut fittest_index = 0;
+    fn get_fittest_individual(&self) -> usize {
+        let mut fittest_index = 0;
 
-            for i in 1..self.individuals.len() {
-                if self.fitnesses[i] > self.fitnesses[fittest_index] {
-                    fittest_index = i;
-                }
+        for i in 1..self.individuals.len() {
+            if self.fitnesses[i] > self.fitnesses[fittest_index] {
+                fittest_index = i;
             }
-            fittest_index
         }
+        fittest_index
+    }
 
-        fn get_weakest_couple(&self) -> (usize, usize) {
+    fn get_weakest_couple(&self) -> (usize, usize) {
         let mut weakest_index = 0;
         let mut second_weakest_index = 0;
 
