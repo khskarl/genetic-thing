@@ -103,3 +103,107 @@ pub fn n_queens(genome: &Vec<i32>, range: &Range<i32>) -> f32 {
     //println!("Boardsize: {} - Num Collisions: {}", board_size, num_diagonal_collisions);
     (board_size - num_diagonal_collisions) as f32 / genome.len() as f32
 }
+
+struct Point {
+    x: usize,
+    y: usize
+}
+
+fn walk(genome: &Vec<i32>, from: Point, to: Point) -> (usize, usize, usize, usize) {
+    let maze = vec![[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,0],
+                    [0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,0,0,0,0,0,0,1,1,0],
+                    [0,1,0,0,0,0,0,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,1,0,0],
+                    [0,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,1,0],
+                    [0,1,0,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,0,1,0],
+                    [0,1,0,0,0,0,1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0],
+                    [0,1,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,0,1,0,1,0,0,1,0],
+                    [0,1,1,1,1,1,1,1,0,1,1,0,1,1,1,0,1,0,1,0,1,0,1,1,0],
+                    [0,0,0,0,0,0,1,1,0,1,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0],
+                    [0,1,1,1,1,0,1,0,0,1,1,0,1,0,0,0,1,0,1,0,1,0,1,1,0],
+                    [0,1,0,0,1,0,1,0,0,1,1,0,1,0,0,0,1,0,1,0,1,1,1,1,0],
+                    [0,1,0,0,1,0,1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,0,0,1,0],
+                    [0,1,0,0,1,0,1,1,0,1,0,1,1,1,1,1,1,0,1,0,1,1,1,1,0],
+                    [0,1,0,0,1,0,1,1,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0],
+                    [0,1,1,0,1,0,0,1,1,1,0,0,0,0,0,1,1,1,1,0,1,0,0,1,0],
+                    [0,1,1,0,1,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,1,0,1,1,0],
+                    [0,0,1,0,1,0,1,1,0,0,0,0,0,0,0,1,1,1,1,0,1,0,1,0,0],
+                    [0,1,1,0,0,0,1,1,0,1,1,1,1,0,0,0,0,0,1,0,1,1,1,1,0],
+                    [0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0],
+                    [0,0,0,0,1,0,0,0,0,1,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0],
+                    [0,1,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0],
+                    [0,1,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0],
+                    [0,1,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0],
+                    [0,1,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0],
+                    [0,1,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1,0],
+                    [0,0,0,0,1,0,1,1,1,1,1,1,1,1,1,0,1,0,0,1,1,1,1,1,0],
+                    [0,1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0,0],
+                    [0,1,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
+
+    let (mut curr_x, mut curr_y) = (from.x, from.y);
+    let (last_x, last_y) = (to.x, to.y);
+
+    let mut visited_positions = vec![(curr_x, curr_y)];
+    let mut num_steps = 0;
+    let mut num_repeated_steps = 0;
+    let mut num_bad_steps = 0;
+    let mut max_consecutive_steps = 0;
+    let mut num_consecutive_steps = 0;
+    for i in 0..genome.len() {
+        num_steps += 1;
+        let direction = genome[i];
+        match direction {
+            0 => { if curr_y > 0  { curr_y -= 1 } },
+            1 => { if curr_x < 24 { curr_x += 1 } },
+            2 => { if curr_y < 28 { curr_y += 1 } },
+            3 => { if curr_x > 0  { curr_x -= 1 } },
+            x => panic!("Unexpected invalid value {:?}", x)            
+        }
+        
+        if visited_positions.contains(&(curr_x, curr_y)) {
+            num_repeated_steps += 1;
+        }
+        visited_positions.push((curr_x, curr_y));
+        
+        let value = maze[curr_y][curr_x];
+        match value {
+            0 => {
+                num_bad_steps += 1;
+                if max_consecutive_steps < num_consecutive_steps {
+                    max_consecutive_steps = num_consecutive_steps;
+                }
+                num_consecutive_steps = 0;
+            },
+            1 => {
+                num_consecutive_steps += 1;
+            },
+            x => panic!("Unexpected invalid value {:?}", x)
+        }
+
+        if curr_x == last_x && curr_y == last_y {
+            break;
+        }
+        
+    }
+
+    if curr_x != last_x && curr_y != last_y {
+        num_steps = genome.len();
+    }
+
+    (num_steps, num_repeated_steps, num_bad_steps, max_consecutive_steps)
+}
+
+pub fn path_fitness(genome: &Vec<i32>, range: &Range<i32>) -> f32 {
+    let start_position = Point {x:1, y:10};
+    let end_position = Point {x:21, y:1};
+    let (num_steps,
+         num_repeated_steps,
+         num_bad_steps,
+         num_consecutive_steps) = walk(genome, start_position, end_position);
+
+    let num_max_steps = genome.len();
+    let penalty = (num_steps + num_repeated_steps + num_bad_steps) as f32;
+    let fitness = (num_consecutive_steps * 3 + num_max_steps * 3) as f32;
+    (fitness - penalty) as f32
+}

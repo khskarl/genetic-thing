@@ -222,14 +222,13 @@ impl<T> Population<T>
     }
 
     fn select_fit_individual(&self) -> usize {
-        self.roulette()
+        self.tournament(4)
     }
 
     fn select_fit_individual_except(&self, dad_index: usize) -> usize {
         let mut mom_index: usize;
-
         loop {
-            mom_index = self.roulette();
+            mom_index = self.select_fit_individual();
 
             if mom_index != dad_index {
                 break;
@@ -282,14 +281,13 @@ impl<T> Population<T>
     }
 
     fn tournament(&self, k: usize) -> usize {
-        let rangeDist = distributions::Range::new(0, self.individuals.len());
-
-        let mut biggest: usize = 0;
+        let mut biggest: usize = rand::thread_rng().gen_range(0, self.individuals.len());
         let mut processed_candidates = HashSet::<usize>::new();
+        processed_candidates.insert(biggest); 
         let mut rng = rand::thread_rng();
 
-        while processed_candidates.len() < k {
-            let picked = rangeDist.ind_sample(&mut rng);
+        while processed_candidates.len() < k - 1 {
+            let picked = rng.gen_range(0, self.individuals.len());
 
             if processed_candidates.contains(&picked) {
                 continue;
@@ -297,7 +295,7 @@ impl<T> Population<T>
 
             processed_candidates.insert(picked);
 
-            if self.fitnesses[picked] > self.fitnesses[biggest] {
+            if self.fitnesses[picked] >= self.fitnesses[biggest] {
                 biggest = picked;
             }
         }

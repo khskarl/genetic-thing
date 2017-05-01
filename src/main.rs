@@ -10,7 +10,8 @@ use genetic::fitness::{max_alternating_bits,
                        max_alternating_even_odd,
                        pattern_recognition,
                        min_dejong,
-                       n_queens};
+                       n_queens,
+                       path_fitness};
 use genetic::crossover::{one_point_crossover,
                          uniform_average_crossover,
                          uniform_crossover,
@@ -22,35 +23,39 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 10000;
+    let total_generations = 50000;
 
-    let population_size = 20;
-    let genome_size = 64;
-    let crossover_probability = 0.95;
-    let mutation_probability = 0.01;
+    let population_size = 50;
+    let genome_size = 50;
+    let crossover_probability = 0.60;
+    let mutation_probability = 0.09;
     let has_elitism = true;
-    let fitness_function = n_queens;
-    let mutation_function = swap_position;
-    let mut population = Population::<i32>::new_ordered(population_size,
-                                                        genome_size,
-                                                        crossover_probability,
-                                                        mutation_probability,
-                                                        Range::new(0, 63),
-                                                        has_elitism,
-                                                        euclidean_distance_int,
-                                                        fitness_function,
-                                                        partially_matched_crossover,
-                                                        mutation_function);
+    let fitness_function = path_fitness;
+    let mutation_function = random_int;
+    let mut population = Population::<i32>::new(population_size,
+                                                genome_size,
+                                                crossover_probability,
+                                                mutation_probability,
+                                                Range::new(0, 3),
+                                                has_elitism,
+                                                euclidean_distance_int,
+                                                fitness_function,
+                                                uniform_crossover,
+                                                mutation_function);
         
     println!("Initial population");
     population.print();
 
     for current_generation in 0..total_generations {
-        //println!("\nA E S T H E T I C S: {}", current_generation);
+        println!("\nA E S T H E T I C S: {}", current_generation);
         population.iterate_generation();
         //population.print();
     }
 
+    let gene = vec![1, 1, 3, 3, 1, 3, 2, 2, 0, 0];
+    println!("{:?}", gene);
+    (fitness_function)(&gene, &Range::new(0, 3));
+    
     population.print_best_individual_diagnostic();
     
     show_convergence_plot(&population.average_fitness_in_generation,
