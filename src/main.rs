@@ -25,10 +25,10 @@ use genetic::mutation::{bit_flip,
 fn main() {
     let total_generations = 50000;
 
-    let population_size = 50;
-    let genome_size = 50;
-    let crossover_probability = 0.60;
-    let mutation_probability = 0.09;
+    let population_size = 30;
+    let genome_size = 100;
+    let crossover_probability = 0.90;
+    let mutation_probability = 0.02;
     let has_elitism = true;
     let fitness_function = path_fitness;
     let mutation_function = random_int;
@@ -40,7 +40,7 @@ fn main() {
                                                 has_elitism,
                                                 euclidean_distance_int,
                                                 fitness_function,
-                                                uniform_crossover,
+                                                one_point_crossover,
                                                 mutation_function);
         
     println!("Initial population");

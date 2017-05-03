@@ -222,7 +222,7 @@ impl<T> Population<T>
     }
 
     fn select_fit_individual(&self) -> usize {
-        self.tournament(4)
+        self.tournament(3)
     }
 
     fn select_fit_individual_except(&self, dad_index: usize) -> usize {

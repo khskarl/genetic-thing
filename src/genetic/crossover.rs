@@ -29,7 +29,6 @@ pub fn one_point_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<
 // Before: [2, 0, 6, 4, 3, 5, 7, 1] [0, 4, 7, 5, 6, 2, 1, 3]
 // Copy:   [2, 0, 7, 5, 6, 5, 7, 1] [0, 4, 6, 4, 3, 2, 1, 3]
 // After:  [2, 0, 7, 5, 6, 4, 3, 1] [0, 5, 6, 4, 3, 2, 1, 6]
-
 pub fn partially_matched_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<T>, Vec<T>)
     where T: Copy + PartialEq + Debug
 {
