@@ -156,7 +156,7 @@ impl<T> Population<T>
             
     }
 
-    pub fn iterate_generation(&mut self) {
+    pub fn iterate_generation(&mut self, curr_generation: usize, total_generations: usize) {
         let fittest_index = self.get_fittest_individual();
         let fittest_individual = self.individuals[fittest_index].clone();
         let fittest_fitness = self.fitnesses[fittest_index];
@@ -190,6 +190,10 @@ impl<T> Population<T>
         }
 
         self.compute_fitnesses();
+        // let factor_current_run = curr_generation as f32 / total_generations as f32;  
+        // let c = 1.2 + 0.8 * factor_current_run; 
+        // self.linear_scaling(c);
+        
         // FIXME: Maybe getting the wrong worst individual
         if self.has_elitism {
             let (weakest_index, _) = self.get_weakest_couple();
@@ -222,7 +226,7 @@ impl<T> Population<T>
     }
 
     fn select_fit_individual(&self) -> usize {
-        self.tournament(3)
+        self.tournament(2)
     }
 
     fn select_fit_individual_except(&self, dad_index: usize) -> usize {
@@ -335,6 +339,40 @@ impl<T> Population<T>
         }
         winner
     }
+
+    fn linear_scaling(&mut self, c: f32) {
+        let sum = self.fitnesses.iter().fold(0.0, |acc, &x| acc + x);
+        let average = sum / self.fitnesses.len() as f32;
+
+        let mut min = self.fitnesses[0];
+        let mut max = self.fitnesses[0];        
+        for fitness in &self.fitnesses {
+            if *fitness < min {
+                min = *fitness;
+            }
+
+            if *fitness > max {
+                max = *fitness;
+            }
+        }
+
+        let decider = (c * (average - max)) / (c - 1.0);
+        let alpha: f32;
+        let beta: f32;
+
+        if min > decider {
+            alpha = (average * (c - 1.0)) / (max - average);
+            beta  = (average * (max - c * average)) / (max - average); 
+        } else {
+            alpha = average / (average - min);
+            beta = (-min * average) / (average - min);
+        }
+
+        for i in 0..self.fitnesses.len() {
+            self.fitnesses[i] = alpha * self.fitnesses[i] + beta;
+        }        
+    } 
+    
 
     pub fn print(&self)
         where T: fmt::Debug

@@ -23,11 +23,11 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 50000;
+    let total_generations = 10000;
 
-    let population_size = 30;
+    let population_size = 20;
     let genome_size = 100;
-    let crossover_probability = 0.90;
+    let crossover_probability = 0.70;
     let mutation_probability = 0.02;
     let has_elitism = true;
     let fitness_function = path_fitness;
@@ -40,7 +40,7 @@ fn main() {
                                                 has_elitism,
                                                 euclidean_distance_int,
                                                 fitness_function,
-                                                one_point_crossover,
+                                                uniform_crossover,
                                                 mutation_function);
         
     println!("Initial population");
@@ -48,7 +48,7 @@ fn main() {
 
     for current_generation in 0..total_generations {
         println!("\nA E S T H E T I C S: {}", current_generation);
-        population.iterate_generation();
+        population.iterate_generation(current_generation, total_generations);
         //population.print();
     }
 

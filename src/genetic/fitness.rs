@@ -160,14 +160,7 @@ fn walk(genome: &Vec<i32>, from: Point, to: Point) -> (usize, usize, usize, usiz
             3 => { if curr_x > 0  { curr_x -= 1 } },
             x => panic!("Unexpected invalid value {:?}", x)            
         }
-        
-        if visited_positions.contains(&(curr_x, curr_y)) {
-            num_repeated_steps += 1; 
-            num_consecutive_steps = 0;
-            continue;
-        }
-        visited_positions.push((curr_x, curr_y)); 
-        
+
         let value = maze[curr_y][curr_x];
         match value {
             0 => {
@@ -185,6 +178,13 @@ fn walk(genome: &Vec<i32>, from: Point, to: Point) -> (usize, usize, usize, usiz
             },
             x => panic!("Unexpected invalid value {:?}", x)
         }
+        
+        if visited_positions.contains(&(curr_x, curr_y)) {
+            num_repeated_steps += 1; 
+            num_consecutive_steps = 0;
+            continue;
+        }
+        visited_positions.push((curr_x, curr_y)); 
 
         if curr_x == to.x && curr_y == to.y {
             break;
@@ -216,19 +216,19 @@ pub fn path_fitness(genome: &Vec<i32>, range: &Range<i32>) -> f32 {
          closest_distance) = walk(genome, start_position, end_position);
 
     let max_steps = genome.len() as f32;
-    let max_steps_sqr = max_steps * max_steps;
-    let max_distance = (genome.len() * 2) as f32;
+    //let max_steps_sqr = max_steps * max_steps;
+    //let max_distance = (genome.len() * 2) as f32;
 
-    let factor_steps = num_steps as f32 / max_steps;
-    let factor_repeated_steps = (num_repeated_steps * num_repeated_steps) as f32 / max_steps_sqr;
-    let factor_bad_steps = num_bad_steps.pow(8) as f32 / genome.len().pow(8) as f32;
-
-    let factor_consecutive_steps =
-        (num_consecutive_steps * num_consecutive_steps) as f32
-        / max_steps_sqr;
-    let factor_close = 1.0 - closest_distance as f32 / max_distance;
+    //let factor_steps = num_steps as f32 / max_steps;
+    //let factor_repeated_steps = (num_repeated_steps * num_repeated_steps) as f32 / max_steps_sqr;
+    let factor_bad_steps = num_bad_steps.pow(2) as f32 / genome.len().pow(2) as f32;
+    //println!("Num bad steps: {}", num_bad_steps);
+    // let factor_consecutive_steps =
+    //     (num_consecutive_steps * num_consecutive_steps) as f32
+    //     / max_steps_sqr;
+    //let factor_close = 1.0 - closest_distance as f32 / max_distance;
     
-    let penalty = (factor_bad_steps * 0.7 + factor_repeated_steps * 0.2 + factor_steps * 0.1);
-    let fitness = (2.0 + factor_consecutive_steps * 0.98 + factor_close * factor_close * 0.02);
+    let penalty = (factor_bad_steps);
+    let fitness = (1.0);
     (fitness - penalty) as f32
 }
