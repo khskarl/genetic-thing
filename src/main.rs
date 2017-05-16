@@ -23,10 +23,10 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 10000;
+    let total_generations = 40000;
 
     let population_size = 20;
-    let genome_size = 60;
+    let genome_size = 100;
     let crossover_probability = 0.70;
     let mutation_probability = 0.06;
     let has_elitism = true;
@@ -36,7 +36,7 @@ fn main() {
                                                 genome_size,
                                                 crossover_probability,
                                                 mutation_probability,
-                                                Range::new(0, 3),
+                                                Range::new(0, 2),
                                                 has_elitism,
                                                 euclidean_distance_int,
                                                 fitness_function,
@@ -52,9 +52,9 @@ fn main() {
         //population.print();
     }
 
-    let gene = vec![1, 1, 3, 3, 1, 3, 2, 2, 0, 0];
-    println!("{:?}", gene);
-    (fitness_function)(&gene, &Range::new(0, 3));
+    // let gene = vec![1, 1, 3, 3, 1, 3, 2, 2, 0, 0];
+    // println!("{:?}", gene);
+    // (fitness_function)(&gene, &Range::new(0, 3));
     
     population.print_best_individual_diagnostic();
     

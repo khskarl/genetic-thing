@@ -151,10 +151,26 @@ fn walk(genome: &Vec<i32>, from: Point, to: Point) -> (usize, usize, usize, usiz
     let mut num_consecutive_steps = 0;
     let mut max_consecutive_steps = 0;
     let mut closest_distance: usize = 0;
+    
+    let mut curr_direction = 2;
     for i in 0..genome.len() {
         num_steps += 1;
-        let direction = genome[i];
-        match direction {
+        let next_action = genome[i];
+
+        match next_action {
+            0 => curr_direction -= 1,
+            1 => curr_direction = curr_direction,
+            2 => curr_direction += 1,
+            x => panic!("Unexpected invalid value {:?}", x)            
+        }
+
+        if curr_direction < 0 {
+            curr_direction = 3;
+        } else if curr_direction > 3 {
+            curr_direction = 0;
+        }
+            
+        match curr_direction {
             0 => { if curr_y > 0  { curr_y -= 1 } },
             1 => { if curr_x < 24 { curr_x += 1 } },
             2 => { if curr_y < 28 { curr_y += 1 } },
