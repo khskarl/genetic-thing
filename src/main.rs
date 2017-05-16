@@ -26,9 +26,9 @@ fn main() {
     let total_generations = 10000;
 
     let population_size = 20;
-    let genome_size = 100;
+    let genome_size = 60;
     let crossover_probability = 0.70;
-    let mutation_probability = 0.02;
+    let mutation_probability = 0.06;
     let has_elitism = true;
     let fitness_function = path_fitness;
     let mutation_function = random_int;
