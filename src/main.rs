@@ -23,7 +23,7 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 40000;
+    let total_generations = 100000;
 
     let population_size = 20;
     let genome_size = 100;

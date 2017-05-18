@@ -159,7 +159,7 @@ fn walk(genome: &Vec<i32>, from: Point, to: Point) -> (usize, usize, usize, usiz
 
         match next_action {
             0 => curr_direction -= 1,
-            1 => curr_direction = curr_direction,
+            1 => (),
             2 => curr_direction += 1,
             x => panic!("Unexpected invalid value {:?}", x)            
         }
