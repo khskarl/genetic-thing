@@ -11,7 +11,8 @@ use genetic::fitness::{max_alternating_bits,
                        pattern_recognition,
                        min_dejong,
                        n_queens,
-                       path_fitness};
+                       path_fitness,
+                       fully_deceptive_f3};
 use genetic::crossover::{one_point_crossover,
                          uniform_average_crossover,
                          uniform_crossover,
@@ -25,10 +26,10 @@ use genetic::mutation::{bit_flip,
 fn main() {
     let total_generations = 100000;
 
-    let population_size = 20;
+    let population_size = 25;
     let genome_size = 100;
-    let crossover_probability = 0.70;
-    let mutation_probability = 0.06;
+    let crossover_probability = 0.95;
+    let mutation_probability = 0.05;
     let has_elitism = true;
     let fitness_function = path_fitness;
     let mutation_function = random_int;
@@ -40,9 +41,9 @@ fn main() {
                                                 has_elitism,
                                                 euclidean_distance_int,
                                                 fitness_function,
-                                                uniform_crossover,
+                                                one_point_crossover,
                                                 mutation_function);
-        
+    
     println!("Initial population");
     population.print();
 

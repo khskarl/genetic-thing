@@ -1,6 +1,7 @@
 use genetic::helpers::Range;
 use genetic::helpers::binary_vector_to_decimal;
 use genetic::helpers::hamming_distance;
+use genetic::helpers::SimpleStepRange;
 
 pub trait HasFitness<T> {
     fn fitness(&self, f: &fn(&Vec<T>, &Range<T>) -> f32, range: &Range<T>)  -> f32;
@@ -19,7 +20,7 @@ impl <T> HasFitness<T> for Vec<T> {
 pub fn max_alternating_bits(genome: &Vec<u8>, range: &Range<u8>) -> f32 {
     let mut was_zero = genome[0] == 0;
     let mut fitness = 0;
-
+    
     for gene in genome {
         let is_zero = *gene == 0;
         if was_zero != is_zero {
@@ -27,7 +28,7 @@ pub fn max_alternating_bits(genome: &Vec<u8>, range: &Range<u8>) -> f32 {
         }
         was_zero = is_zero;
     }
-
+    
     fitness as f32
 }
 
@@ -235,23 +236,34 @@ pub fn path_fitness(genome: &Vec<i32>, range: &Range<i32>) -> f32 {
 
     let max_steps = genome.len() as f32;
     //let max_steps_sqr = max_steps * max_steps;
-    //let max_distance = (genome.len() * 2) as f32;
+    let max_distance = (genome.len() * 2) as f32;
 
-    //let factor_steps = num_steps as f32 / max_steps;
-    //let factor_repeated_steps = (num_repeated_steps * num_repeated_steps) as f32 / max_steps_sqr;
+    let factor_steps = num_steps as f32 / max_steps;
     let factor_bad_steps = num_bad_steps.pow(1) as f32 / max_steps;
-    //println!("Num bad steps: {}", num_bad_steps);
     let factor_consecutive_steps =
         (num_consecutive_steps) as f32
         / max_steps;
-    //let factor_close = 1.0 - closest_distance as f32 / max_distance;
+    let factor_close = 1.0 - closest_distance as f32 / max_distance;
     
     let mut penalty = (factor_bad_steps);
-    let mut fitness = (1.0 + factor_consecutive_steps);
+    let mut fitness = (factor_close * 0.2 + factor_consecutive_steps);
 
     if num_bad_steps > 0 {
         fitness = factor_consecutive_steps;
         penalty = 0.0;
     }
     (fitness - penalty) as f32
+}
+
+pub fn fully_deceptive_f3(genome: &Vec<u8>, range: &Range<i32>) -> f32 {
+    let f3 = [28, 26, 22, 0,
+              14, 0,  0, 30];
+
+    let mut result = 0;
+    for i in SimpleStepRange(0, genome.len(), 3) {
+        let decimal_index = genome[i] * 3 + genome[i+1] * 2 + genome[i+2] * 1;
+        result += f3[decimal_index as usize];
+    }
+    
+    result as f32
 }
