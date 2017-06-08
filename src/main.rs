@@ -12,7 +12,7 @@ use genetic::fitness::{max_alternating_bits,
                        min_dejong,
                        n_queens,
                        path_fitness,
-                       fully_deceptive_f3};
+                       deceptive_f3};
 use genetic::crossover::{one_point_crossover,
                          uniform_average_crossover,
                          uniform_crossover,
@@ -24,24 +24,24 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 100000;
+    let total_generations = 5000;
 
-    let population_size = 25;
+    let population_size = 30;
     let genome_size = 100;
     let crossover_probability = 0.95;
     let mutation_probability = 0.05;
     let has_elitism = true;
-    let fitness_function = path_fitness;
-    let mutation_function = random_int;
-    let mut population = Population::<i32>::new(population_size,
-                                                genome_size,
+    let fitness_function = deceptive_f3;
+    let mutation_function = bit_flip;
+    let mut population = Population::<u8>::new(population_size,
+                                               genome_size,
                                                 crossover_probability,
                                                 mutation_probability,
-                                                Range::new(0, 2),
-                                                has_elitism,
-                                                euclidean_distance_int,
-                                                fitness_function,
-                                                one_point_crossover,
+                                               Range::new(0, 1),
+                                               has_elitism,
+                                               hamming_distance,
+                                               fitness_function,
+                                               one_point_crossover,
                                                 mutation_function);
     
     println!("Initial population");
@@ -62,13 +62,14 @@ fn main() {
     show_convergence_plot(&population.average_fitness_in_generation,
                           &population.best_fitness_in_generation);
     
-    //show_diversity_plot(&population.diversity_in_generation);
+    show_diversity_plot(&population.diversity_in_generation);
 }
 
 fn show_convergence_plot(average_fitnesses: &Vec<f32>, best_fitnesses: &Vec<f32>) {
     let generations: Vec<usize> = (0..average_fitnesses.len()).collect();
 
     let mut fg = Figure::new();
+    fg.set_terminal("wxt size 800, 400", "");
     fg.axes2d()
         .lines(&generations,
                average_fitnesses,
@@ -83,6 +84,7 @@ fn show_diversity_plot(diversity_in_generations: &Vec<f32>) {
     let generations: Vec<usize> = (0..diversity_in_generations.len()).collect();
 
     let mut fg = Figure::new();
+    fg.set_terminal("wxt size 800, 400", "");
     fg.axes2d()
         .lines(&generations,
                diversity_in_generations,

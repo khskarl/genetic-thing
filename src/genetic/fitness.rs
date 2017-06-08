@@ -255,15 +255,49 @@ pub fn path_fitness(genome: &Vec<i32>, range: &Range<i32>) -> f32 {
     (fitness - penalty) as f32
 }
 
-pub fn fully_deceptive_f3(genome: &Vec<u8>, range: &Range<i32>) -> f32 {
+pub fn deceptive_f3(genome: &Vec<u8>, range: &Range<u8>) -> f32 {
+    let f3 = [28, 26, 22, 0,
+              14, 0,  0, 30];
+
+    let mut result = 0;
+    for i in SimpleStepRange(0, genome.len()-1, 3) {
+        let decimal_index =
+            genome[i] * 3 +
+            genome[i+1] * 2 +
+            genome[i+2] * 1;
+        result += f3[decimal_index as usize];
+    }
+    
+    result as f32
+}
+
+
+pub fn deceptive_f3s(genome: &Vec<u8>, range: &Range<u8>) -> f32 {
     let f3 = [28, 26, 22, 0,
               14, 0,  0, 30];
 
     let mut result = 0;
     for i in SimpleStepRange(0, genome.len(), 3) {
-        let decimal_index = genome[i] * 3 + genome[i+1] * 2 + genome[i+2] * 1;
+        let decimal_index = genome[i] * 3 + genome[i + 10] * 2 + genome[i + 20] * 1;
         result += f3[decimal_index as usize];
     }
     
     result as f32
+}
+
+pub fn deceptive_4(genome: &Vec<u8>, range: &Range<u8>) -> f32 {
+    
+    let mut fitness = 0;
+    for i in SimpleStepRange(0, genome.len(), 4) {
+        let num_ones = genome[i+0] + genome[i+1] + genome[i+2] + genome[i+3];
+
+        if num_ones == 0 {
+            fitness += 5;
+        }
+        else {
+            fitness += num_ones;
+        }
+    }
+
+    fitness as f32
 }
