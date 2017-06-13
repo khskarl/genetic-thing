@@ -1,3 +1,5 @@
+use std::f32;
+
 extern crate gnuplot;
 use gnuplot::{AxesCommon, Figure, Color};
 use gnuplot::LabelOption::TextColor;
@@ -27,7 +29,7 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 2000; 
+    let total_generations = 500; 
     let population_size = 20;
     let genome_size = 64;
 
@@ -62,8 +64,11 @@ fn main() {
     population.print();
 
     for current_generation in 0..total_generations {
-        println!("\nA E S T H E T I C S: {}", current_generation);
+        // Temperature calculation
+                
+        // Iteration
         population.iterate_generation(current_generation, total_generations);
+        println!("\nGeneration: {}", current_generation);
         //population.print();
     }
 
@@ -117,3 +122,4 @@ fn show_diversity_plot(diversity_in_generations: &Vec<f32>) {
     }
     fg.show();
 }
+

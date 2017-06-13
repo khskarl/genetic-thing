@@ -11,6 +11,7 @@ use std::fmt;
 use std::cmp;
 use std::ops::{Add, Sub, Mul};
 use std::collections::HashSet;
+use std::f32;
 
 use genetic::fitness::HasFitness;
 use genetic::mutation::Mutation;
@@ -177,7 +178,7 @@ impl<T> Population<T>
             
     }
 
-    pub fn iterate_generation(&mut self, curr_generation: usize, total_generations: usize) {
+    pub fn iterate_generation(&mut self, current_generation: usize, total_generations: usize) {
         let fittest_index = self.get_fittest_individual();
         let fittest_individual = self.individuals[fittest_index].clone();
         let fittest_fitness = self.fitnesses[fittest_index];
@@ -202,6 +203,7 @@ impl<T> Population<T>
             new_individuals[dad_index].genome.clone_from(&boy_genome);
             new_individuals[mom_index].genome.clone_from(&girl_genome);
         }
+        
         self.individuals.clone_from(&new_individuals);
 
         for individual in &mut self.individuals {
@@ -213,8 +215,7 @@ impl<T> Population<T>
         self.compute_fitnesses();
 
         if self.has_scaling {
-            let factor_current_run = curr_generation as f32 / total_generations as f32;  
-            let c = 1.2 + 0.8 * factor_current_run; 
+            let c = 1.2 * (2.0 / 1.2 as f32).powf(current_generation as f32 / total_generations as f32);
             self.apply_linear_scaling(c); 
         }
         // FIXME: Maybe getting the wrong worst individual
