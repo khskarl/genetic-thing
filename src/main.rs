@@ -29,44 +29,56 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 500; 
+    let total_generations = 2000; 
     let population_size = 20;
     let genome_size = 64;
 
-    let crossover_probability = 0.95;
-    let mutation_probability = 0.05;
+    let crossover_probability = 0.70;
+    let mutation_probability = 0.02;
 
     let has_elitism = true;
     let has_scaling = false;
-    let has_generation_gap = false;
+    let has_generation_gap = true;
     let has_fitness_sharing = false;
     let crowding_factor = 1.0;
     
-    let fitness_function = deceptive_4;
-    let mutation_function = bit_flip;
+    let fitness_function = n_queens;
+    let mutation_function = swap_position;
 
-    let mut population = Population::<u8>::new(population_size,
-                                               genome_size,
-                                               crossover_probability,
-                                               mutation_probability,
-                                               Range::new(0, 1),
-                                               has_elitism,
-                                               has_scaling,
-                                               has_generation_gap,
-                                               has_fitness_sharing,
-                                               crowding_factor,
-                                               hamming_distance,
-                                               fitness_function,
-                                               one_point_crossover,
-                                               mutation_function);
+    let mut population = Population::<i32>::new_ordered(population_size,
+                                                        genome_size,
+                                                        crossover_probability,
+                                                        mutation_probability,
+                                                        Range::new(0, 63),
+                                                        has_elitism,
+                                                        has_scaling,
+                                                        has_generation_gap,
+                                                        has_fitness_sharing,
+                                                        crowding_factor,
+                                                        euclidean_distance_int,
+                                                        fitness_function,
+                                                        partially_matched_crossover,
+                                                        mutation_function);
+    
+    // let mut population = Population::<u8>::new(population_size,
+    //                                            genome_size,
+    //                                            crossover_probability,
+    //                                            mutation_probability,
+    //                                            Range::new(0, 1),
+    //                                            has_elitism,
+    //                                            has_scaling,
+    //                                            has_generation_gap,
+    //                                            has_fitness_sharing,
+    //                                            crowding_factor,
+    //                                            hamming_distance,
+    //                                            fitness_function,
+    //                                            one_point_crossover,
+    //                                            mutation_function);
     
     println!("Initial population");
     population.print();
 
     for current_generation in 0..total_generations {
-        // Temperature calculation
-                
-        // Iteration
         population.iterate_generation(current_generation, total_generations);
         println!("\nGeneration: {}", current_generation);
         //population.print();

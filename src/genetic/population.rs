@@ -204,14 +204,27 @@ impl<T> Population<T>
             new_individuals[mom_index].genome.clone_from(&girl_genome);
         }
         
-        self.individuals.clone_from(&new_individuals);
-
-        for individual in &mut self.individuals {
+        for individual in &mut new_individuals {
             individual.genome.mutate(&self.mutation_function,
                                      self.mutation_probability,
                                      &self.range);
         }
 
+        if self.has_generation_gap {
+            let dirty_gap_factor = current_generation as f32 / total_generations as f32;
+            let gap_factor = (10.0 * dirty_gap_factor).ceil() / 10.0;
+            
+            let last_index = (gap_factor * self.individuals.len() as f32).round() as usize;
+            // let last_index = 2;
+            let offset = rand::thread_rng().gen_range(0, self.individuals.len() - last_index + 1);
+            println!("Gap: {}      LastIndex: {}", gap_factor, last_index);
+            for i in (offset + 0)..(offset + last_index) {
+                self.individuals[i] = new_individuals[i].clone();
+            }
+        } else {
+            self.individuals.clone_from(&new_individuals);
+        }
+        
         self.compute_fitnesses();
 
         if self.has_scaling {
@@ -220,9 +233,10 @@ impl<T> Population<T>
         }
         // FIXME: Maybe getting the wrong worst individual
         if self.has_elitism {
-            let (weakest_index, _) = self.get_weakest_couple();
-            self.individuals[weakest_index] = fittest_individual.clone();
-            self.fitnesses[weakest_index] = fittest_fitness;
+            // let (weakest_index, _) = self.get_weakest_couple();
+            let unfortunate_pal = rand::thread_rng().gen_range(0, self.individuals.len());
+            self.individuals[unfortunate_pal] = fittest_individual.clone();
+            self.fitnesses[unfortunate_pal] = fittest_fitness;
         }
 
         // Save average and best fitness in this generation
