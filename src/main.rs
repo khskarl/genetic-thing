@@ -1,5 +1,6 @@
 extern crate gnuplot;
-use gnuplot::{Figure, Color};
+use gnuplot::{AxesCommon, Figure, Color};
+use gnuplot::LabelOption::TextColor;
 use gnuplot::PlotOption::LineWidth;
 
 mod genetic;
@@ -12,7 +13,9 @@ use genetic::fitness::{max_alternating_bits,
                        min_dejong,
                        n_queens,
                        path_fitness,
-                       deceptive_f3};
+                       deceptive_f3,
+                       deceptive_f3s,
+                       deceptive_4,};
 use genetic::crossover::{one_point_crossover,
                          uniform_average_crossover,
                          uniform_crossover,
@@ -24,25 +27,25 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 5000;
+    let total_generations = 2000;
 
-    let population_size = 30;
-    let genome_size = 100;
+    let population_size = 20;
+    let genome_size = 64;
     let crossover_probability = 0.95;
     let mutation_probability = 0.05;
     let has_elitism = true;
-    let fitness_function = deceptive_f3;
+    let fitness_function = deceptive_4;
     let mutation_function = bit_flip;
     let mut population = Population::<u8>::new(population_size,
                                                genome_size,
-                                                crossover_probability,
-                                                mutation_probability,
+                                               crossover_probability,
+                                               mutation_probability,
                                                Range::new(0, 1),
                                                has_elitism,
                                                hamming_distance,
                                                fitness_function,
                                                one_point_crossover,
-                                                mutation_function);
+                                               mutation_function);
     
     println!("Initial population");
     population.print();
@@ -70,13 +73,19 @@ fn show_convergence_plot(average_fitnesses: &Vec<f32>, best_fitnesses: &Vec<f32>
 
     let mut fg = Figure::new();
     fg.set_terminal("wxt size 800, 400", "");
-    fg.axes2d()
-        .lines(&generations,
-               average_fitnesses,
-               &[Color("#505050"), LineWidth(1.5)])
-        .lines(&generations,
-               best_fitnesses,
-               &[Color("#0072bd"), LineWidth(1.5)]);
+    {
+        let axes = fg.axes2d()
+            .lines(&generations,
+                   average_fitnesses,
+                   &[Color("#505050"), LineWidth(1.5)])
+            .lines(&generations,
+                   best_fitnesses,
+                   &[Color("#0072bd"), LineWidth(1.5)]);
+
+        let label_options = &[gnuplot::LabelOption::TextColor("black")];
+        axes.set_x_label("Gerações", label_options);
+        axes.set_y_label("Fitness", label_options);
+    }
     fg.show();
 }
 
@@ -85,9 +94,15 @@ fn show_diversity_plot(diversity_in_generations: &Vec<f32>) {
 
     let mut fg = Figure::new();
     fg.set_terminal("wxt size 800, 400", "");
-    fg.axes2d()
-        .lines(&generations,
-               diversity_in_generations,
-               &[Color("#505050"), LineWidth(1.5)]);
+    {
+        let axes = fg.axes2d()
+            .lines(&generations,
+                   diversity_in_generations,
+                   &[Color("#505050"), LineWidth(1.5)]);
+    
+        let label_options = &[gnuplot::LabelOption::TextColor("black")];
+        axes.set_x_label("Gerações", label_options);
+        axes.set_y_label("Diversidade", label_options);
+    }
     fg.show();
 }
