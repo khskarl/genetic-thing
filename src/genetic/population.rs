@@ -31,9 +31,9 @@ impl<T> Individual<T>
     {
         let mut genome: Vec<T> = Vec::new();
         let mut rng = rand::thread_rng();
-        let rangeDist = distributions::Range::new(range.start, range.end + T::one());
+        let range_dist = distributions::Range::new(range.start, range.end + T::one());
         for _ in 0..size {
-            let value = rangeDist.ind_sample(&mut rng);
+            let value = range_dist.ind_sample(&mut rng);
             genome.push(value);
         }
 
@@ -68,6 +68,11 @@ pub struct Population<T>
     crossover_probability: f32,
     mutation_probability: f32,
     has_elitism: bool,
+    has_scaling: bool,
+    has_generation_gap: bool,
+    has_fitness_sharing: bool,
+    crowding_factor: f32,
+    
     range: Range<T>,
 
     diversity_function: fn(&Vec<T>, &Vec<T>) -> f32,
@@ -85,6 +90,10 @@ impl<T> Population<T>
                mutation_probability: f32,
                range: Range<T>,
                has_elitism: bool,
+               has_scaling: bool,
+               has_generation_gap: bool,
+               has_fitness_sharing: bool,
+               crowding_factor: f32,
                diversity_function: fn(&Vec<T>, &Vec<T>) -> f32,
                fitness_function: fn(&Vec<T>, &Range<T>) -> f32,
                crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
@@ -112,6 +121,10 @@ impl<T> Population<T>
             mutation_probability: mutation_probability,
             genome_length: genome_size,
             has_elitism: has_elitism,
+            has_scaling: has_scaling,
+            has_generation_gap: has_generation_gap,
+            has_fitness_sharing: has_fitness_sharing,
+            crowding_factor: crowding_factor,
 
             diversity_function: diversity_function,
             fitness_function: fitness_function,
@@ -126,6 +139,10 @@ impl<T> Population<T>
                        mutation_probability: f32,
                        range: Range<i32>,
                        has_elitism: bool,
+                       has_scaling: bool,
+                       has_generation_gap: bool,
+                       has_fitness_sharing: bool,
+                       crowding_factor: f32,
                        diversity_function: fn(&Vec<i32>, &Vec<i32>) -> f32,
                        fitness_function: fn(&Vec<i32>, &Range<i32>) -> f32,
                        crossover_function: fn(&Vec<i32>, &Vec<i32>) -> (Vec<i32>, Vec<i32>),
@@ -139,6 +156,10 @@ impl<T> Population<T>
                                                     mutation_probability,
                                                     range,
                                                     has_elitism,
+                                                    has_scaling,
+                                                    has_generation_gap,
+                                                    has_fitness_sharing,
+                                                    crowding_factor, 
                                                     diversity_function,
                                                     fitness_function,
                                                     crossover_function,
@@ -190,10 +211,12 @@ impl<T> Population<T>
         }
 
         self.compute_fitnesses();
-        // let factor_current_run = curr_generation as f32 / total_generations as f32;  
-        // let c = 1.2 + 0.8 * factor_current_run; 
-        // self.linear_scaling(c);
-        
+
+        if self.has_scaling {
+            let factor_current_run = curr_generation as f32 / total_generations as f32;  
+            let c = 1.2 + 0.8 * factor_current_run; 
+            self.apply_linear_scaling(c); 
+        }
         // FIXME: Maybe getting the wrong worst individual
         if self.has_elitism {
             let (weakest_index, _) = self.get_weakest_couple();
@@ -218,6 +241,7 @@ impl<T> Population<T>
             self.average_fitness_in_generation.push(avg_fitness);
             self.best_individual_in_generation.push(best_individual);
             self.best_fitness_in_generation.push(best_fitness);
+
             let diversity = self.calculate_diversity();
             self.diversity_in_generation.push(diversity);
         }
@@ -226,7 +250,7 @@ impl<T> Population<T>
     }
 
     fn select_fit_individual(&self) -> usize {
-        self.tournament(2)
+        self.tournament(3)
     }
 
     fn select_fit_individual_except(&self, dad_index: usize) -> usize {
@@ -340,7 +364,7 @@ impl<T> Population<T>
         winner
     }
 
-    fn linear_scaling(&mut self, c: f32) {
+    fn apply_linear_scaling(&mut self, c: f32) {
         let sum = self.fitnesses.iter().fold(0.0, |acc, &x| acc + x);
         let average = sum / self.fitnesses.len() as f32;
 

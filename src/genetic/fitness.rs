@@ -286,7 +286,6 @@ pub fn deceptive_f3s(genome: &Vec<u8>, range: &Range<u8>) -> f32 {
 }
 
 pub fn deceptive_4(genome: &Vec<u8>, range: &Range<u8>) -> f32 {
-    
     let mut fitness = 0;
     for i in SimpleStepRange(0, genome.len(), 4) {
         let num_ones = genome[i+0] + genome[i+1] + genome[i+2] + genome[i+3];
