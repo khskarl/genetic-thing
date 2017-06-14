@@ -24,28 +24,28 @@ pub fn binary_vector_to_decimal(binary_vector: &Vec<u8>) -> i32 {
     decimal
 }
 
-pub fn hamming_distance(genome_one: &Vec<u8>, genome_two: &Vec<u8>) -> f32 {
+pub fn hamming_distance(genome_one: &Vec<u8>, genome_two: &Vec<u8>, range: &Range<u8>) -> f32 {
     let mut total_distance = 0.0;
     for i in 0..genome_one.len() {
         if genome_one[i] != genome_two[i] {
             total_distance += 1.0;
         }
     }
-    total_distance
+    total_distance / genome_one.len() as f32
 }
 
-pub fn euclidean_distance_int(genome_one: &Vec<i32>, genome_two: &Vec<i32>) -> f32
+pub fn euclidean_distance_int(genome_one: &Vec<i32>, genome_two: &Vec<i32>, range: &Range<i32>) -> f32
 {
     let mut total_distance = 0;
 
     for i in 0..genome_one.len() {
         total_distance += (genome_one[i] - genome_two[i]).pow(2);
     }
-
-    (total_distance as f32).sqrt()
+    let max_distance = genome_one.len() as i32 * (range.end - range.start).pow(2);
+    (total_distance as f32 / max_distance as f32).sqrt() 
 }
 
-pub fn euclidean_distance_float(genome_one: &Vec<f32>, genome_two: &Vec<f32>) -> f32
+pub fn euclidean_distance_float(genome_one: &Vec<f32>, genome_two: &Vec<f32>, range: &Range<f32>) -> f32
 {
     let mut total_distance: f32 = 0.0;
 
@@ -53,7 +53,8 @@ pub fn euclidean_distance_float(genome_one: &Vec<f32>, genome_two: &Vec<f32>) ->
         total_distance += (genome_one[i] - genome_two[i]).powf(2.0);
     }
 
-    (total_distance).sqrt()
+    let max_distance = genome_one.len() as f32 * ((range.end - range.start).powf(2.0) as f32).sqrt();
+    (total_distance).sqrt() / max_distance
 }
 
 

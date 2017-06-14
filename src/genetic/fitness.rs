@@ -80,7 +80,7 @@ pub fn pattern_recognition(genome: &Vec<u8>, range: &Range<u8>) -> f32 {
                             0,1,1,1,0,0,
                             0,0,0,0,1,0].to_vec();
     
-    let fit: f32 = hamming_distance(&pattern, &genome);
+    let fit: f32 = hamming_distance(&pattern, &genome, range);
     36.0 - fit
 }
 

@@ -76,7 +76,7 @@ pub struct Population<T>
     
     range: Range<T>,
 
-    diversity_function: fn(&Vec<T>, &Vec<T>) -> f32,
+    diversity_function: fn(&Vec<T>, &Vec<T>, &Range<T>) -> f32,
     fitness_function: fn(&Vec<T>, &Range<T>) -> f32,
     crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
     mutation_function: fn(&mut Vec<T>, f32, &Range<T>),
@@ -95,7 +95,7 @@ impl<T> Population<T>
                has_generation_gap: bool,
                has_fitness_sharing: bool,
                crowding_factor: f32,
-               diversity_function: fn(&Vec<T>, &Vec<T>) -> f32,
+               diversity_function: fn(&Vec<T>, &Vec<T>, &Range<T>) -> f32,
                fitness_function: fn(&Vec<T>, &Range<T>) -> f32,
                crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
                mutation_function: fn(&mut Vec<T>, f32, &Range<T>))
@@ -144,7 +144,7 @@ impl<T> Population<T>
                        has_generation_gap: bool,
                        has_fitness_sharing: bool,
                        crowding_factor: f32,
-                       diversity_function: fn(&Vec<i32>, &Vec<i32>) -> f32,
+                       diversity_function: fn(&Vec<i32>, &Vec<i32>, &Range<i32>) -> f32,
                        fitness_function: fn(&Vec<i32>, &Range<i32>) -> f32,
                        crossover_function: fn(&Vec<i32>, &Vec<i32>) -> (Vec<i32>, Vec<i32>),
                        mutation_function: fn(&mut Vec<i32>, f32, &Range<i32>))
@@ -231,12 +231,12 @@ impl<T> Population<T>
             let c = 1.2 * (2.0 / 1.2 as f32).powf(current_generation as f32 / total_generations as f32);
             self.apply_linear_scaling(c); 
         }
-        // FIXME: Maybe getting the wrong worst individual
+ 
         if self.has_elitism {
             // let (weakest_index, _) = self.get_weakest_couple();
-            let unfortunate_pal = rand::thread_rng().gen_range(0, self.individuals.len());
-            self.individuals[unfortunate_pal] = fittest_individual.clone();
-            self.fitnesses[unfortunate_pal] = fittest_fitness;
+            // let unfortunate_pal = rand::thread_rng().gen_range(0, self.individuals.len());
+            self.individuals[fittest_index] = fittest_individual.clone();
+            self.fitnesses[fittest_index] = fittest_fitness;
         }
 
         // Save average and best fitness in this generation
@@ -352,7 +352,8 @@ impl<T> Population<T>
         for i in 0..self.individuals.len() {
             for j in i..self.individuals.len() {
                 total_diversity += (self.diversity_function)(&self.individuals[i].genome,
-                                                             &self.individuals[j].genome);
+                                                             &self.individuals[j].genome,
+                                                             &self.range);
             }
         }
 
