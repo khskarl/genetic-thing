@@ -37,7 +37,7 @@ fn main() {
     let mutation_probability = 0.05;
 
     let has_elitism = true;
-    let has_scaling = false;
+    let has_scaling = true;
     let has_generation_gap = true;
     let has_fitness_sharing = false;
     let crowding_factor = 1.0;

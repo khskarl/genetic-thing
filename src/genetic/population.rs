@@ -182,7 +182,13 @@ impl<T> Population<T>
         let fittest_index = self.get_fittest_individual();
         let fittest_individual = self.individuals[fittest_index].clone();
         let fittest_fitness = self.fitnesses[fittest_index];
-
+        
+        // FIXME: Fix linear scaling, it should use the scale value in some places but not change the original
+        if self.has_scaling {
+            let c = 1.2 * (2.0 / 1.2 as f32).powf(current_generation as f32 / total_generations as f32);
+            self.apply_linear_scaling(c); 
+        }
+        
         let mut new_individuals = Vec::new();
 
         for _ in 0..self.individuals.len() {
@@ -227,11 +233,6 @@ impl<T> Population<T>
         
         self.compute_fitnesses();
 
-        if self.has_scaling {
-            let c = 1.2 * (2.0 / 1.2 as f32).powf(current_generation as f32 / total_generations as f32);
-            self.apply_linear_scaling(c); 
-        }
- 
         if self.has_elitism {
             // let (weakest_index, _) = self.get_weakest_couple();
             // let unfortunate_pal = rand::thread_rng().gen_range(0, self.individuals.len());
@@ -265,7 +266,7 @@ impl<T> Population<T>
     }
 
     fn select_fit_individual(&self) -> usize {
-        self.tournament(3)
+        self.roulette()
     }
 
     fn select_fit_individual_except(&self, dad_index: usize) -> usize {
