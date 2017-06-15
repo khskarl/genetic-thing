@@ -35,14 +35,14 @@ fn main() {
     let population_size = 30;
     let genome_size = 30;
 
-    let crossover_probability = 0.60;
-    let mutation_probability = 0.005;
+    let crossover_probability = 0.80;
+    let mutation_probability = 0.05;
 
     let has_elitism = true;
     let has_scaling = true;
     let has_generation_gap = true;
     let has_fitness_sharing = true;
-    let crowding_factor = 1.0;
+    let crowding_factor = 2;
 
     let distance_function = hamming_distance;
     

@@ -73,7 +73,7 @@ pub struct Population<T>
     has_scaling: bool,
     has_generation_gap: bool,
     has_fitness_sharing: bool,
-    crowding_factor: f32,
+    crowding_factor: usize,
     
     range: Range<T>,
 
@@ -95,7 +95,7 @@ impl<T> Population<T>
                has_scaling: bool,
                has_generation_gap: bool,
                has_fitness_sharing: bool,
-               crowding_factor: f32,
+               crowding_factor: usize,
                diversity_function: fn(&Vec<T>, &Vec<T>, &Range<T>) -> f32,
                fitness_function: fn(&Vec<T>, &Range<T>) -> f32,
                crossover_function: fn(&Vec<T>, &Vec<T>) -> (Vec<T>, Vec<T>),
@@ -144,7 +144,7 @@ impl<T> Population<T>
                        has_scaling: bool,
                        has_generation_gap: bool,
                        has_fitness_sharing: bool,
-                       crowding_factor: f32,
+                       crowding_factor: usize,
                        diversity_function: fn(&Vec<i32>, &Vec<i32>, &Range<i32>) -> f32,
                        fitness_function: fn(&Vec<i32>, &Range<i32>) -> f32,
                        crossover_function: fn(&Vec<i32>, &Vec<i32>) -> (Vec<i32>, Vec<i32>),
@@ -266,10 +266,14 @@ impl<T> Population<T>
             let gap_factor = (10.0 * dirty_gap_factor).ceil() / 10.0;
             
             let last_index = (gap_factor * self.individuals.len() as f32).round() as usize; 
-            let offset = rand::thread_rng().gen_range(0, self.individuals.len() - last_index + 1);
-           
-            for i in (offset + 0)..(offset + last_index) {
-                self.individuals[i] = new_individuals[i].clone();
+            
+            let mut indices: Vec<usize> = num::range(0, last_index).collect();
+            
+            let mut shuffled_indices = indices.as_mut_slice();
+            thread_rng().shuffle(&mut shuffled_indices);
+            
+            for i in 0..last_index {
+                self.individuals[shuffled_indices[i]] = new_individuals[shuffled_indices[i]].clone();
             }
         } else {
             self.individuals.clone_from(&new_individuals);
@@ -296,7 +300,7 @@ impl<T> Population<T>
     }
     
     fn select_fit_individual(&self) -> usize {
-        self.tournament(2)
+        self.roulette()
     }
 
     fn select_fit_individual_except(&self, dad_index: usize) -> usize {
