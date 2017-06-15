@@ -271,12 +271,50 @@ impl<T> Population<T>
             
             let mut shuffled_indices = indices.as_mut_slice();
             thread_rng().shuffle(&mut shuffled_indices);
-            
-            for i in 0..last_index {
-                self.individuals[shuffled_indices[i]] = new_individuals[shuffled_indices[i]].clone();
+
+            if self.crowding_factor > 1 {
+                for i in 0..last_index {
+                    let curr_index = shuffled_indices[i];
+                    let mut similar_index = curr_index;
+                    let mut similar_similarity = 1.0;
+                    
+                    for j in self.select_random_n_indices(self.crowding_factor) {
+                        let similarity = (self.diversity_function)(&self.individuals[j].genome,
+                                                                   &new_individuals[curr_index].genome,
+                                                                   &self.range);
+
+                        if similar_similarity <= similarity {
+                            similar_similarity = similarity;
+                            similar_index = j;
+                        }
+                    }
+                    self.individuals[similar_index] = new_individuals[curr_index].clone();
+                }
+            } else {
+                for i in 0..last_index {
+                    self.individuals[shuffled_indices[i]] = new_individuals[shuffled_indices[i]].clone();
+                }
             }
         } else {
-            self.individuals.clone_from(&new_individuals);
+            if self.crowding_factor > 1 {
+                for i in self.select_random_n_indices(self.crowding_factor) {
+                    let mut similar_index = i;
+                    let mut similar_similarity = 1.0;
+                    for j in 0..self.individuals.len() {
+                        let similarity = (self.diversity_function)(&self.individuals[j].genome,
+                                                                   &new_individuals[i].genome,
+                                                                   &self.range);
+
+                        if similar_similarity <= similarity {
+                            similar_similarity = similarity;
+                            similar_index = j;
+                        }
+                    }
+                    self.individuals[similar_index] = new_individuals[i].clone();
+                }
+            } else {
+                self.individuals.clone_from(&new_individuals);
+            }
         }
 
         
@@ -287,6 +325,29 @@ impl<T> Population<T>
 
         
 
+    }
+
+    fn select_random_n_indices(&self, num_indices: usize) -> Vec<usize> {
+        let mut selected_individuals = Vec::<usize>::new();
+        
+        for _ in 0..num_indices {
+            loop {
+                let candidate_index = rand::thread_rng().gen_range(0, self.individuals.len());
+                let mut is_unique = true;
+                for index in &selected_individuals {
+                    if candidate_index == *index {
+                        is_unique = false;
+                    }
+                }
+
+                if is_unique {
+                    selected_individuals.push(candidate_index);
+                    break;
+                }
+            } 
+        }
+
+        selected_individuals 
     }
 
     fn select_random_couple(&self) -> (usize, usize) {

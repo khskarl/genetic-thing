@@ -42,7 +42,7 @@ fn main() {
     let has_scaling = true;
     let has_generation_gap = true;
     let has_fitness_sharing = true;
-    let crowding_factor = 2;
+    let crowding_factor = 3;
 
     let distance_function = hamming_distance;
     
