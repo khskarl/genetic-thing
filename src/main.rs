@@ -29,17 +29,17 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 2000; 
-    let population_size = 20;
+    let total_generations = 20000; 
+    let population_size = 30;
     let genome_size = 30;
 
     let crossover_probability = 0.95;
     let mutation_probability = 0.05;
 
     let has_elitism = true;
-    let has_scaling = true;
+    let has_scaling = false;
     let has_generation_gap = true;
-    let has_fitness_sharing = false;
+    let has_fitness_sharing = true;
     let crowding_factor = 1.0;
 
     let distance_function = hamming_distance;
@@ -59,7 +59,7 @@ fn main() {
                                                crowding_factor,
                                                distance_function,
                                                fitness_function,
-                                               uniform_crossover,
+                                               one_point_crossover,
                                                mutation_function);
     
     println!("Initial population");

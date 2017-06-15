@@ -25,13 +25,14 @@ pub fn binary_vector_to_decimal(binary_vector: &Vec<u8>) -> i32 {
 }
 
 pub fn hamming_distance(genome_one: &Vec<u8>, genome_two: &Vec<u8>, range: &Range<u8>) -> f32 {
-    let mut total_distance = 0.0;
+    let mut total_distance = 0;
     for i in 0..genome_one.len() {
         if genome_one[i] != genome_two[i] {
-            total_distance += 1.0;
+            total_distance += 1;
         }
     }
-    total_distance / genome_one.len() as f32
+    let normalized_distance = total_distance as f32 / genome_two.len() as f32;
+    normalized_distance
 }
 
 pub fn euclidean_distance_int(genome_one: &Vec<i32>, genome_two: &Vec<i32>, range: &Range<i32>) -> f32
