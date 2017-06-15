@@ -35,8 +35,8 @@ fn main() {
     let population_size = 30;
     let genome_size = 30;
 
-    let crossover_probability = 0.95;
-    let mutation_probability = 0.05;
+    let crossover_probability = 0.60;
+    let mutation_probability = 0.005;
 
     let has_elitism = true;
     let has_scaling = true;
@@ -46,7 +46,7 @@ fn main() {
 
     let distance_function = hamming_distance;
     
-    let fitness_function = max_alternating_bits;
+    let fitness_function = deceptive_f3;
     let mutation_function = bit_flip;
     
     let mut population = Population::<u8>::new(population_size,
@@ -61,7 +61,7 @@ fn main() {
                                                crowding_factor,
                                                distance_function,
                                                fitness_function,
-                                               one_point_crossover,
+                                               uniform_crossover_3,
                                                mutation_function);
     
     println!("Initial population");
