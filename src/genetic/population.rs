@@ -279,8 +279,8 @@ impl<T> Population<T>
                     let mut similar_similarity = 1.0;
                     
                     for j in self.select_random_n_indices(self.crowding_factor) {
-                        let similarity = (self.diversity_function)(&self.individuals[j].genome,
-                                                                   &new_individuals[curr_index].genome,
+                        let similarity = 1.0 - (self.diversity_function)(&self.individuals[j].genome,
+                                                                         &new_individuals[curr_index].genome,
                                                                    &self.range);
 
                         if similar_similarity <= similarity {
@@ -301,8 +301,8 @@ impl<T> Population<T>
                     let mut similar_index = i;
                     let mut similar_similarity = 1.0;
                     for j in 0..self.individuals.len() {
-                        let similarity = (self.diversity_function)(&self.individuals[j].genome,
-                                                                   &new_individuals[i].genome,
+                        let similarity = 1.0 - (self.diversity_function)(&self.individuals[j].genome,
+                                                                         &new_individuals[i].genome,
                                                                    &self.range);
 
                         if similar_similarity <= similarity {
