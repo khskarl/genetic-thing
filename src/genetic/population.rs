@@ -3,6 +3,7 @@ pub use self::rand::distributions;
 use self::rand::distributions::IndependentSample;
 use self::rand::{thread_rng, Rng};
 
+
 extern crate num;
 use self::num::{Num, Zero, One};
 use self::num::traits::pow;
@@ -179,6 +180,30 @@ impl<T> Population<T>
     }
 
     pub fn iterate_generation(&mut self, current_generation: usize, total_generations: usize) {
+        self.compute_fitnesses();
+
+        // Save average and best fitness in this generation
+        {
+            let mut best_fitness = 0.0;
+            let mut best_individual = self.individuals[0].clone();
+            let mut sum_fitnesses = 0.0;
+            for i in 0..self.fitnesses.len() {
+                sum_fitnesses += self.fitnesses[i];
+                if self.fitnesses[i] > best_fitness {
+                    best_fitness = self.fitnesses[i];
+                    best_individual = self.individuals[i].clone();
+                }
+            }
+            let avg_fitness = sum_fitnesses / (self.fitnesses.len() as f32);
+
+            self.average_fitness_in_generation.push(avg_fitness);
+            self.best_individual_in_generation.push(best_individual);
+            self.best_fitness_in_generation.push(best_fitness);
+
+            let diversity = self.calculate_diversity();
+            self.diversity_in_generation.push(diversity);
+        }
+
         let fittest_index = self.get_fittest_individual();
         let fittest_individual = self.individuals[fittest_index].clone();
         let fittest_fitness = self.fitnesses[fittest_index];
@@ -188,26 +213,28 @@ impl<T> Population<T>
                 let mut sum_distances = 0.0;
                 
                 for j in 0..self.individuals.len() {
-                    sum_distances += 1.0 - (self.diversity_function)(&self.individuals[i].genome,
-                                                                     &self.individuals[j].genome,
-                                                                     &self.range);
+                    let sigma = 0.2;
+                    let alpha = 0.5;
+                    let d = (self.diversity_function)(&self.individuals[i].genome,
+                                                      &self.individuals[j].genome,
+                                                      &self.range);
+                    if d < sigma {
+                        sum_distances += 1.0 - (d / sigma).powf(alpha);
+                    }                    
                 }
 
-                let raw_fitness = self.fitnesses[i];
-                let shared_fitness = raw_fitness / sum_distances;
+                let shared_fitness = self.fitnesses[i] / sum_distances;
                 self.fitnesses[i] = shared_fitness;                    
             } 
         }
         
-
-        // FIXME: Fix linear scaling, it should use the scale value in selection but not change the original
         if self.has_scaling {
             let c = 1.2 * (2.0 / 1.2 as f32).powf(current_generation as f32 / total_generations as f32);
             self.apply_linear_scaling(c); 
         }
 
+        // Selection
         let mut new_individuals = Vec::new();
-
         for _ in 0..self.individuals.len() {
             let fit_index = self.select_fit_individual();
             new_individuals.push(self.individuals[fit_index].clone());
@@ -223,7 +250,7 @@ impl<T> Population<T>
             let (dad_index, mom_index) = self.select_random_couple();
 
             //println!("dad: {}, mom: {}", dad_index, mom_index);
-            let (boy_genome, girl_genome) = self.crossover(dad_index, mom_index);
+            let (boy_genome, girl_genome) = self.crossover(&mut new_individuals, dad_index, mom_index);
             new_individuals[dad_index].genome.clone_from(&boy_genome);
             new_individuals[mom_index].genome.clone_from(&girl_genome);
         }
@@ -248,37 +275,13 @@ impl<T> Population<T>
             self.individuals.clone_from(&new_individuals);
         }
 
-        self.compute_fitnesses();
-
-        if self.has_elitism {
-            // let (weakest_index, _) = self.get_weakest_couple();
-            // let unfortunate_pal = rand::thread_rng().gen_range(0, self.individuals.len());
+        
+        if self.has_elitism {            
             self.individuals[fittest_index] = fittest_individual.clone();
             self.fitnesses[fittest_index] = fittest_fitness;
         }
 
-        // Save average and best fitness in this generation
-        {
-            let mut best_fitness = 0.0;
-            let mut best_individual = self.individuals[0].clone();
-            let mut sum_fitnesses = 0.0;
-            for i in 0..self.fitnesses.len() {
-                sum_fitnesses += self.fitnesses[i];
-                if self.fitnesses[i] > best_fitness {
-                    best_fitness = self.fitnesses[i];
-                    best_individual = self.individuals[i].clone();
-                }
-            }
-            let avg_fitness = sum_fitnesses / (self.fitnesses.len() as f32);
-
-            self.average_fitness_in_generation.push(avg_fitness);
-            self.best_individual_in_generation.push(best_individual);
-            self.best_fitness_in_generation.push(best_fitness);
-
-            let diversity = self.calculate_diversity();
-            self.diversity_in_generation.push(diversity);
-        }
-
+        
 
     }
 
@@ -293,7 +296,7 @@ impl<T> Population<T>
     }
     
     fn select_fit_individual(&self) -> usize {
-        self.roulette()
+        self.tournament(5)
     }
 
     fn select_fit_individual_except(&self, dad_index: usize) -> usize {
@@ -339,74 +342,74 @@ impl<T> Population<T>
         }
     }
 
-    fn crossover(&mut self, index_dad: usize, index_mom: usize) -> (Vec<T>, Vec<T>) {
+    fn crossover(&mut self, individuals: &mut Vec<Individual<T>>, index_dad: usize, index_mom: usize) -> (Vec<T>, Vec<T>) {
         let max_index = cmp::max(index_dad, index_mom);
         let min_index = cmp::min(index_dad, index_mom);
 
-        let (split_left, split_right) = self.individuals.split_at_mut(max_index);
+        let (split_left, split_right) = individuals.split_at_mut(max_index);
         let (dad, mom) = (&mut split_left[min_index], &mut split_right[0]);
 
         let (boy_genome, girl_genome) = (self.crossover_function)(&dad.genome, &mom.genome);
+        (boy_genome, girl_genome)
+    }
+    
 
-            (boy_genome, girl_genome)
-        }
+    fn tournament(&self, k: usize) -> usize {
+        let mut biggest: usize = rand::thread_rng().gen_range(0, self.individuals.len());
+        let mut processed_candidates = HashSet::<usize>::new();
+        processed_candidates.insert(biggest); 
+        let mut rng = rand::thread_rng();
 
-        fn tournament(&self, k: usize) -> usize {
-            let mut biggest: usize = rand::thread_rng().gen_range(0, self.individuals.len());
-            let mut processed_candidates = HashSet::<usize>::new();
-            processed_candidates.insert(biggest); 
-            let mut rng = rand::thread_rng();
+        while processed_candidates.len() < k - 1 {
+            let picked = rng.gen_range(0, self.individuals.len());
 
-            while processed_candidates.len() < k - 1 {
-                let picked = rng.gen_range(0, self.individuals.len());
-
-                if processed_candidates.contains(&picked) {
-                    continue;
-                }
-
-                processed_candidates.insert(picked);
-
-                if self.fitnesses[picked] >= self.fitnesses[biggest] {
-                    biggest = picked;
-                }
+            if processed_candidates.contains(&picked) {
+                continue;
             }
 
-            biggest
+            processed_candidates.insert(picked);
+
+            if self.fitnesses[picked] >= self.fitnesses[biggest] {
+                biggest = picked;
+            }
         }
 
-        fn calculate_diversity(&self) -> f32 {
-            let mut total_diversity = 0.0;
+        biggest
+    }
 
-            for i in 0..self.individuals.len() {
-                for j in i..self.individuals.len() {
-                    total_diversity += (self.diversity_function)(&self.individuals[i].genome,
-                                                                 &self.individuals[j].genome,
-                                                                 &self.range);
-                }
+    fn calculate_diversity(&self) -> f32 {
+        let mut total_diversity = 0.0;
+
+        for i in 0..self.individuals.len() {
+            for j in i..self.individuals.len() {
+                total_diversity += (self.diversity_function)(&self.individuals[i].genome,
+                                                             &self.individuals[j].genome,
+                                                             &self.range);
+            }
+        }
+
+        total_diversity
+    }
+
+    fn roulette(&self) -> usize {
+        let chance = rand::random::<f32>();
+        let sum = self.fitnesses.iter().fold(0.0, |acc, &x| acc + x);
+
+        let mut winner: usize = 0;
+        let mut last_probability = 0.0;
+        for i in 0..self.fitnesses.len() {
+            let fitness = self.fitnesses[i];
+            let probability = fitness / sum + last_probability;
+
+            if chance < probability {
+                winner = i;
+                break;
             }
 
-            total_diversity
+            last_probability = probability;
         }
-
-        fn roulette(&self) -> usize {
-            let chance = rand::random::<f32>();
-            let sum = self.fitnesses.iter().fold(0.0, |acc, &x| acc + x);
-
-            let mut winner: usize = 0;
-            let mut last_probability = 0.0;
-            for i in 0..self.fitnesses.len() {
-                let fitness = self.fitnesses[i];
-                let probability = fitness / sum + last_probability;
-
-                if chance < probability {
-                    winner = i;
-                    break;
-                }
-
-                last_probability = probability;
-            }
-            winner
-        }
+        winner
+    }
 
     fn apply_linear_scaling(&mut self, c: f32) {
         let sum = self.fitnesses.iter().fold(0.0, |acc, &x| acc + x);

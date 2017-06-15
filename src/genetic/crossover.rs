@@ -1,6 +1,9 @@
 extern crate rand;
 use self::rand::Rng;
 
+
+use genetic::helpers::SimpleStepRange;
+
 extern crate num;
 use self::num::{Num};
 
@@ -23,6 +26,23 @@ pub fn one_point_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<
 
     (boy_genome, girl_genome)
 }
+
+pub fn one_point_crossover_3<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<T>, Vec<T>)
+    where T: Copy
+{
+    let mut point = 1;
+    while point % 3 != 0 {
+        point = rand::thread_rng().gen_range(2, dad_genome.len() - 3);
+    }
+    
+    let mut boy_genome = dad_genome.clone();
+    let mut girl_genome = mom_genome.clone();
+    boy_genome[0..point + 1].copy_from_slice(&mom_genome[0..point + 1]);
+    girl_genome[0..point + 1].copy_from_slice(&dad_genome[0..point + 1]);
+
+    (boy_genome, girl_genome)
+}
+
 
 pub fn partially_matched_crossover<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<T>, Vec<T>)
     where T: Copy + PartialEq + Debug
@@ -145,3 +165,26 @@ pub fn blend_crossover(dad_genome: &Vec<f32>, mom_genome: &Vec<f32>) -> (Vec<f32
     (boy_genome, girl_genome)
 }
 
+// TODO: Test the dank out of this function
+pub fn uniform_crossover_3<T>(dad_genome: &Vec<T>, mom_genome: &Vec<T>) -> (Vec<T>, Vec<T>)
+    where T: Copy + PartialEq + Num + Div<Output = T> + Add<Output = T>
+{
+    let mix_ratio = 0.5;
+
+    let mut boy_genome = dad_genome.clone();
+    let mut girl_genome = mom_genome.clone();
+
+    for i in SimpleStepRange(0, mom_genome.len(), 3) {
+        if rand::random::<f32>() > mix_ratio {
+            boy_genome[i  ] = mom_genome[i  ];
+            boy_genome[i+1] = mom_genome[i+1];
+            boy_genome[i+2] = mom_genome[i+2];
+            
+            girl_genome[i  ] = dad_genome[i  ];
+            girl_genome[i+1] = dad_genome[i+1];
+            girl_genome[i+2] = dad_genome[i+2];
+        } 
+    }
+
+    (boy_genome, girl_genome)
+}

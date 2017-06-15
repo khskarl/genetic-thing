@@ -17,10 +17,12 @@ use genetic::fitness::{max_alternating_bits,
                        path_fitness,
                        deceptive_f3,
                        deceptive_f3s,
-                       deceptive_4,};
+                       deceptive_4};
 use genetic::crossover::{one_point_crossover,
+                         one_point_crossover_3,
                          uniform_average_crossover,
                          uniform_crossover,
+                         uniform_crossover_3,
                          partially_matched_crossover};
 use genetic::mutation::{bit_flip,
                         swap_position,
@@ -29,7 +31,7 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 20000; 
+    let total_generations = 2000; 
     let population_size = 30;
     let genome_size = 30;
 
@@ -37,14 +39,14 @@ fn main() {
     let mutation_probability = 0.05;
 
     let has_elitism = true;
-    let has_scaling = false;
+    let has_scaling = true;
     let has_generation_gap = true;
     let has_fitness_sharing = true;
     let crowding_factor = 1.0;
 
     let distance_function = hamming_distance;
     
-    let fitness_function = deceptive_f3;
+    let fitness_function = max_alternating_bits;
     let mutation_function = bit_flip;
     
     let mut population = Population::<u8>::new(population_size,
@@ -67,7 +69,7 @@ fn main() {
 
     for current_generation in 0..total_generations {
         population.iterate_generation(current_generation, total_generations);
-        println!("\nGeneration: {}", current_generation);
+        //println!("\nGeneration: {}", current_generation);
         //population.print();
     }
 
@@ -88,10 +90,10 @@ fn show_convergence_plot(average_fitnesses: &Vec<f32>, best_fitnesses: &Vec<f32>
         let axes = fg.axes2d()
             .lines(&generations,
                    average_fitnesses,
-                   &[Color("#505050"), LineWidth(1.5)])
+                   &[Color("#505050"), LineWidth(1.2)])
             .lines(&generations,
                    best_fitnesses,
-                   &[Color("#0072bd"), LineWidth(1.5)]);
+                   &[Color("#0072bd"), LineWidth(1.2)]);
 
         let label_options = &[gnuplot::LabelOption::TextColor("black")];
         axes.set_x_label("Gerações", label_options);
@@ -109,7 +111,7 @@ fn show_diversity_plot(diversity_in_generations: &Vec<f32>) {
         let axes = fg.axes2d()
             .lines(&generations,
                    diversity_in_generations,
-                   &[Color("#505050"), LineWidth(1.5)]);
+                   &[Color("#505050"), LineWidth(1.2)]);
     
         let label_options = &[gnuplot::LabelOption::TextColor("black")];
         axes.set_x_label("Gerações", label_options);
