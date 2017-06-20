@@ -213,8 +213,8 @@ impl<T> Population<T>
                 let mut sum_distances = 0.0;
                 
                 for j in 0..self.individuals.len() {
-                    let sigma = 0.2;
-                    let alpha = 0.5;
+                    let sigma = 0.05;
+                    let alpha = 2.0;
                     let d = (self.diversity_function)(&self.individuals[i].genome,
                                                       &self.individuals[j].genome,
                                                       &self.range);

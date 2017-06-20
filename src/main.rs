@@ -31,45 +31,45 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 2000; 
+    let total_generations = 1000; 
     let population_size = 30;
-    let genome_size = 30;
+    let genome_size = 64;
 
-    let crossover_probability = 0.80;
-    let mutation_probability = 0.05;
+    let crossover_probability = 0.95;
+    let mutation_probability = 0.01;
 
     let has_elitism = true;
-    let has_scaling = false;
-    let has_generation_gap = true;
+    let has_scaling = true;
+    let has_generation_gap = false;
     let has_fitness_sharing = false;
-    let crowding_factor = 2;
+    let crowding_factor = 1;
 
-    let distance_function = hamming_distance;
+    let distance_function = euclidean_distance_int;
     
-    let fitness_function = deceptive_f3;
-    let mutation_function = bit_flip;
+    let fitness_function = n_queens;
+    let mutation_function = swap_position;
     
-    let mut population = Population::<u8>::new(population_size,
-                                               genome_size,
-                                               crossover_probability,
-                                               mutation_probability,
-                                               Range::new(0, 1),
-                                               has_elitism,
-                                               has_scaling,
-                                               has_generation_gap,
-                                               has_fitness_sharing,
-                                               crowding_factor,
-                                               distance_function,
-                                               fitness_function,
-                                               uniform_crossover_3,
-                                               mutation_function);
+    let mut population = Population::<i32>::new_ordered(population_size,
+                                                        genome_size,
+                                                        crossover_probability,
+                                                        mutation_probability,
+                                                        Range::new(0, 63),
+                                                        has_elitism,
+                                                        has_scaling,
+                                                        has_generation_gap,
+                                                        has_fitness_sharing,
+                                                        crowding_factor,
+                                                        distance_function,
+                                                        fitness_function,
+                                                        partially_matched_crossover,
+                                                        mutation_function);
     
     println!("Initial population");
     population.print();
 
     for current_generation in 0..total_generations {
         population.iterate_generation(current_generation, total_generations);
-        //println!("\nGeneration: {}", current_generation);
+        println!("\nGeneration: {}", current_generation);
         //population.print();
     }
 
