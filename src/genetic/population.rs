@@ -265,7 +265,7 @@ impl<T> Population<T>
             let dirty_gap_factor = current_generation as f32 / total_generations as f32;
             let gap_factor = (10.0 * dirty_gap_factor).ceil() / 10.0;
             
-            let last_index = (gap_factor * self.individuals.len() as f32).round() as usize; 
+            let last_index = (gap_factor * self.individuals.len() as f32).ceil() as usize; 
             
             let mut indices: Vec<usize> = num::range(0, last_index).collect();
             

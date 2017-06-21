@@ -31,13 +31,13 @@ use genetic::mutation::{bit_flip,
                         gaussian_mutation};
 
 fn main() {
-    let total_generations = 1000; 
+    let total_generations = 100;
     let population_size = 30;
-    let genome_size = 64;
+    let genome_size = 8;
 
     let crossover_probability = 0.95;
     let mutation_probability = 0.01;
-
+    
     let has_elitism = true;
     let has_scaling = true;
     let has_generation_gap = false;
@@ -53,7 +53,7 @@ fn main() {
                                                         genome_size,
                                                         crossover_probability,
                                                         mutation_probability,
-                                                        Range::new(0, 63),
+                                                        Range::new(0, 7),
                                                         has_elitism,
                                                         has_scaling,
                                                         has_generation_gap,
