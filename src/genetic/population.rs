@@ -215,8 +215,8 @@ impl<T> Population<T>
                 let mut sum_distances = 0.0;
                 
                 for j in 0..self.individuals.len() {
-                    let sigma = 0.2;
-                    let alpha = 0.5;
+                    let sigma = 0.01;
+                    let alpha = 2.0;
                     let d = (self.diversity_function)(&self.individuals[i].genome,
                                                       &self.individuals[j].genome,
                                                       &self.range);
@@ -231,7 +231,7 @@ impl<T> Population<T>
         }
         
         if self.has_scaling {
-            let c = 1.2 * (2.0 / 1.2q as f32).powf(current_generation as f32 / total_generations as f32);
+            let c = 1.2 * (2.0 / 1.2 as f32).powf(current_generation as f32 / total_generations as f32);
             self.apply_linear_scaling(c); 
         }
 
@@ -386,19 +386,6 @@ impl<T> Population<T>
             }
         }
         fittest_index
-    }
-
-    fn get_weakest_couple(&self) -> (usize, usize) {
-        let mut weakest_index = 0;
-        let mut second_weakest_index = 0;
-
-        for i in 1..self.individuals.len() {
-            if self.fitnesses[i] < self.fitnesses[weakest_index] {
-                second_weakest_index = weakest_index;
-                weakest_index = i;
-            }
-        }
-        (weakest_index, second_weakest_index)
     }
 
     fn compute_fitnesses(&mut self) {

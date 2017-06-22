@@ -33,10 +33,10 @@ use genetic::mutation::{bit_flip,
 fn main() {
     let total_generations = 10000;
     let population_size = 50;
-    let genome_size = 30;
+    let genome_size = 64;
 
-    let crossover_probability = 0.95;
-    let mutation_probability = 0.001;
+    let crossover_probability = 0.98;
+    let mutation_probability = 0.01;
     
     let has_elitism = true;
     let has_scaling = true;
@@ -46,7 +46,7 @@ fn main() {
 
     let distance_function = hamming_distance;
     
-    let fitness_function = deceptive_f3;
+    let fitness_function = deceptive_4;
     let mutation_function = bit_flip;
     
     let mut population = Population::<u8>::new(population_size,
@@ -61,7 +61,7 @@ fn main() {
                                                crowding_factor,
                                                distance_function,
                                                fitness_function,
-                                               uniform_crossover,
+                                               one_point_crossover,
                                                mutation_function);
     
     println!("Initial population");
