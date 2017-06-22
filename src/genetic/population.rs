@@ -180,6 +180,8 @@ impl<T> Population<T>
     }
 
     pub fn iterate_generation(&mut self, current_generation: usize, total_generations: usize) {
+        let progress_factor = current_generation as f32 / total_generations as f32;
+        
         self.compute_fitnesses();
 
         // Save average and best fitness in this generation
@@ -208,13 +210,13 @@ impl<T> Population<T>
         let fittest_individual = self.individuals[fittest_index].clone();
         let fittest_fitness = self.fitnesses[fittest_index];
         
-        if self.has_fitness_sharing {
+        if self.has_fitness_sharing && progress_factor < 0.9 {
             for i in 0..self.individuals.len() {
                 let mut sum_distances = 0.0;
                 
                 for j in 0..self.individuals.len() {
-                    let sigma = 0.05;
-                    let alpha = 2.0;
+                    let sigma = 0.2;
+                    let alpha = 0.5;
                     let d = (self.diversity_function)(&self.individuals[i].genome,
                                                       &self.individuals[j].genome,
                                                       &self.range);
@@ -229,7 +231,7 @@ impl<T> Population<T>
         }
         
         if self.has_scaling {
-            let c = 1.2 * (2.0 / 1.2 as f32).powf(current_generation as f32 / total_generations as f32);
+            let c = 1.2 * (2.0 / 1.2q as f32).powf(current_generation as f32 / total_generations as f32);
             self.apply_linear_scaling(c); 
         }
 
@@ -261,9 +263,8 @@ impl<T> Population<T>
                                      &self.range);
         }
 
-        if self.has_generation_gap {
-            let dirty_gap_factor = current_generation as f32 / total_generations as f32;
-            let gap_factor = (10.0 * dirty_gap_factor).ceil() / 10.0;
+        if self.has_generation_gap && progress_factor < 0.9 {
+            let gap_factor = (10.0 * progress_factor).ceil() / 10.0;
             
             let last_index = (gap_factor * self.individuals.len() as f32).ceil() as usize; 
             
@@ -272,7 +273,7 @@ impl<T> Population<T>
             let mut shuffled_indices = indices.as_mut_slice();
             thread_rng().shuffle(&mut shuffled_indices);
 
-            if self.crowding_factor > 1 {
+            if self.crowding_factor > 1 && progress_factor < 0.9 {
                 for i in 0..last_index {
                     let curr_index = shuffled_indices[i];
                     let mut similar_index = curr_index;
@@ -296,7 +297,7 @@ impl<T> Population<T>
                 }
             }
         } else {
-            if self.crowding_factor > 1 {
+            if self.crowding_factor > 1 && progress_factor < 0.9 {
                 for i in self.select_random_n_indices(self.crowding_factor) {
                     let mut similar_index = i;
                     let mut similar_similarity = 1.0;
