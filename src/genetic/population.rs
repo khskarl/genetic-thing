@@ -225,7 +225,12 @@ impl<T> Population<T>
                     }                    
                 }
 
+                if sum_distances < 1.0 {
+                    sum_distances = 1.0;
+                }
+                
                 let shared_fitness = self.fitnesses[i] / sum_distances;
+                
                 self.fitnesses[i] = shared_fitness;                    
             } 
         }
@@ -362,7 +367,7 @@ impl<T> Population<T>
     }
     
     fn select_fit_individual(&self) -> usize {
-        self.roulette()
+        self.tournament(4)
     }
 
     fn select_fit_individual_except(&self, dad_index: usize) -> usize {

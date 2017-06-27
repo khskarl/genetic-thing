@@ -276,9 +276,10 @@ pub fn deceptive_f3s(genome: &Vec<u8>, range: &Range<u8>) -> f32 {
     let f3 = [28, 26, 22, 0,
               14, 0,  0, 30];
 
+    let offset = genome.len() / 3;
     let mut result = 0;
-    for i in SimpleStepRange(0, genome.len(), 3) {
-        let decimal_index = genome[i] * 3 + genome[i + 10] * 2 + genome[i + 20] * 1;
+    for i in 0..genome.len()-offset*2 {
+        let decimal_index = genome[i] * 3 + genome[i + offset] * 2 + genome[i + offset * 2] * 1;
         result += f3[decimal_index as usize];
     }
     
